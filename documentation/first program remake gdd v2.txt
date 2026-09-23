@@ -1,0 +1,1636 @@
+1. Project Overview
+2. Core Gameplay Loop
+3. Maps
+4. Encounter Points
+5. Example Map Progression
+6. Information Points
+7. Recruitment point
+8. Shops
+9. Shop — Items
+10. Weapons
+11. Armor
+12. Boss Equipment
+13. Boss Equipment Synergies
+14. Combat
+15. Turn Structure
+16. Run
+17. Skip
+18. Moves
+19. Getting Moves
+20. Attack Moves
+21. Magic Moves
+22. MP
+23. Targeting
+24. Synergy Moves
+25. Synergy Effects
+26. Synergy Stats
+27. Hero and Monster Synergies
+28. Learning Synergies
+29. Entity Stats
+30. HP
+31. MP
+32. Attack
+33. Magic
+34. Defense
+35. Abilities
+36. Affinity
+37. Gold
+38. XP
+39. Leveling
+40. Stat Points
+41. Hero Builds
+42. Move Learning by Level
+43. Monster Stats
+44. Encounter Chance
+45. Drop Chance
+46. Monster Design
+47. Bosses
+48. Boss AI
+49. Example Boss
+50. Boss Abilities
+51. Boss Rewards
+52. inventory
+53. Possible Future Features
+54. Combat Design Principles
+55. Development Plan
+56. Current Design Philosophy
+57. Core Identity
+
+
+Top-Down ASCII RPG
+1. Project Overview
+
+Remake the first program I made using Laravel.
+The game is a top-down RPG with multiple ASCII-based maps. The player explores the maps, encounters monsters, finds shops and information points, saves and heals at save points, and eventually fights bosses.
+The main focus of the game is the turn-based combat system, especially:
+
+A maximum of 4 moves per hero
+Choosing moves for multiple heroes
+Move synergies
+Hero customization
+Equipment
+Monster abilities
+Unique boss AI
+Boss equipment and equipment synergies
+
+The player explores the world, learns about enemies and synergies, builds their heroes, and uses that knowledge to overcome increasingly difficult encounters.
+
+2. Core Gameplay Loop
+
+The basic gameplay loop is:
+
+Explore Map
+     ↓
+Find Encounters
+     ↓
+Fight Monsters
+     ↓
+Gain XP / Gold / Equipment
+     ↓
+Level Up / Learn Moves
+     ↓
+Visit Shops / Recruit Heroes
+     ↓
+Learn Monster / Synergy Information
+     ↓
+Prepare for Boss
+     ↓
+Defeat Boss
+     ↓
+Reach Next Map
+
+3. Maps
+
+Maps are created using ASCII characters.
+
+Example
+----------------------
+|S       .          $|
+|     ---------      |
+|   --|   .   |      |
+|   |>#       |    . |
+|   --|  .    |.. . .|
+|     ----    |  .   |
+|.    .    .  |      |
+|I|   .    R  |  X   |
+-----------------<----
+Map Symbols
+Symbol	Meaning
+X	Player
+$	Shop point 
+.	Encounter point
+#	Boss point 
+<>	transition point travel to the next or previous map
+-|	Wall
+S	Save and healing point
+I	Information point
+R	Recruitment point
+
+Walls cannot be walked through.
+
+The player can move between maps through map-transition spaces.
+
+4. Encounter Points
+
+When the player steps onto an encounter point (.), an encounter can be triggered.
+The game selects monsters from the encounter table for the current map.
+Each monster has an Encounter Chance that determines how likely it is to appear.
+
+An encounter can contain:
+
+One monster
+Multiple monsters
+
+The number and combination of monsters can vary.
+
+For example:
+
+Forest Map
+
+Forest Goblin       40%
+green slime         30%
+Forest Wolf         20%
+Forest Wolf X2      10%
+
+A later map could have a completely different encounter table.
+
+5. Example Map Progression
+
+An area can contain several maps.
+
+For example:
+
+Map 1
+Emberwood Entrance
+        ↓
+Map 2
+Burning Grove
+        ↓
+Map 3
+Ashen Shrine
+        ↓
+Boss
+Ashen Knight
+
+Each map can introduce stronger monsters, new mechanics, different encounter chances, and new information.
+
+6. Information Points
+
+
+Information Points (I) provide Wild Information about the area.
+
+There are two levels of information in the game:
+
+Wild Information is obtained from Information Points.
+
+Wild Information is:
+
+Free
+Cryptic
+Short
+Intended to give the player hints
+Available before the player has defeated the relevant monster
+Not intended to reveal exact statistics or complete mechanics
+
+Wild Information can give clues about:
+
+Monsters found in the area
+Monster strengths
+Monster weaknesses
+Monster abilities
+Monster behavior
+Bosses
+Boss mechanics
+Synergies
+Other useful gameplay information
+
+For example:
+
+------------------------------------
+| There is a rare chance to find a |
+| Golden Goblin in these woods.    |
+| It will flee after some time,    |
+| but if you defeat it in time,    |
+| you will be richly rewarded.     |
+------------------------------------
+
+This tells the player that:
+
+A Golden Goblin can appear in the area.
+It is rare.
+It can flee.
+There is a reward for defeating it quickly.
+
+The purpose of Wild Information is to let the player learn through hints and observation without giving them the complete answer.
+
+
+Pristine Information is the detailed version of information.
+It is normally obtained by purchasing information from a Shop and rearly from Information Points.
+
+Pristine Information can provide:
+
+Exact or detailed statistics
+Abilities
+Move information
+Affinity
+Encounter Chance
+Gold reward
+XP reward
+Drop information
+Detailed descriptions
+Detailed mechanics
+Synergy combinations
+Other information that would allow the player to fully understand how something works
+
+Monster Pristine Information has one important requirement:
+The player must defeat the monster at least once before its Pristine Information can be purchased.
+
+This creates a progression where the player first gets a hint, then experiences the enemy themselves, and finally has the option to purchase a complete explanation.
+
+
+7. Recruitment point
+
+Recruitment Points allow the player to recruit new heroes into their party.
+
+When the player interacts with a Recruitment Point (R), 
+the game displays the hero who can be recruited and the condition required to recruit them.
+
+A hero can have:
+
+No recruitment condition
+Gold requirement
+monster-defeat requirement
+hero stat requirement
+party level requirement
+
+Example:
+
+-------------------------
+| Hero 2 wants to       |
+| join your party       |
+|                       |
+| Recruitment condition |
+| Pay 100 Gold          |
+|                       |
+| Recruit (100 gold)    |
+| Exit                  |
+-------------------------
+
+8. Shops
+
+Shops can contain four main categories:
+
+----------------
+|     SHOP     |
+|              |
+| Gear         |
+| Moves        |
+| Info         |
+| Exit         |
+----------------
+Items
+
+Gear include:
+
+Weapons
+Armor
+
+Players can buy permanent moves for heroes.
+
+Information
+
+Players can buy information about:
+
+Monsters
+Synergy moves
+Other
+
+Other includes Wild Info found from Information Points
+
+9. Shop — Gear
+
+The Gear section of a Shop allows the player to purchase weapons and armor.
+Before purchasing equipment, the player selects which hero will receive the equipment.
+
+Example:
+
+--------------
+| Hero 1     |
+| Hero 2     |
+|            |
+| Back       |
+--------------
+
+Then the available equipment is shown.
+
+------------------------
+| Weapon               |
+| Iron Sword 15G       |
+|                      |
+| Armor                |
+| Leather Armor 10G    |
+| Fire Charm Armor 20G |
+|                      |
+| Back                 |
+------------------------
+
+When a hero equips newly purchased equipment, 
+their currently equipped equipment is moved into the Inventory.
+
+example for geting info 
+
+------------------
+| info type      |
+|                |
+| Monsters       |
+| Synergie move  |
+| Other          |
+|                |
+| Back           |
+------------------
+
+slecting monster 
+
+------------------------
+| Monster              |
+| . golden goblin 10G  |
+| . Forest Wolf 10G    |
+|                      |
+| Boss                 |
+| # King slime 25G     |
+| # Hop goblin         |
+|                      |
+| Back                 |
+------------------------
+
+The . means it is an encounter.
+The # means it is a boss.
+
+The Hop Goblin does not cost money because its information has already been purchased.
+
+When selecting Golden Goblin, information about the monster can only be obtained if the monster has been defeated.
+
+When the player buys information about the Golden Goblin from a shop, they receive detailed information:
+
+example
+--------------------------
+| Name: Golden Goblin    |
+| Level: 10 - 12         |
+| HP: 7 - 10             |
+| MP: 0                  |
+| Attack: 15 - 17        |
+| Magic: 0               |
+| Defense: 25 - 30       |
+| XP: 600                |
+| Gold: 125              |
+| Ability: Coward        |
+| Will run after 5 turns |
+| Affinity: Metal        |
+| Encounter Chance: 5%   |
+| Description            |
+| A rare goblin variant  |
+| that drops a lot of    |
+| gold and XP and runs   |
+| away if you don't kill |
+| it in time.            |
+| Recommended to use     |
+| magic due to its high  |
+| defense.               |
+|                        |
+| Back                   |
+--------------------------
+
+When getting information from an Information Point, the player receives a more cryptic description instead of detailed statistics.
+
+example
+------------------------------------
+| There is a rare chance to find a |
+| Golden Goblin in these woods.    |
+| It will flee after some time,    |
+| but if you defeat it in time,    |
+| you will be richly rewarded.     |
+------------------------------------
+
+The purpose of Information Points is to give the player useful hints without revealing all of the monster's statistics and mechanics.
+
+Shop information provides detailed information about a monster, while Information Points provide more cryptic hints.
+
+
+Selecting a Synergy Move
+
+---------------------------
+| Holy Water 20G          |
+| Burning Catastrophe 25G |
+|                         |
+| Back                    |
+---------------------------
+
+when slecting synergie move holy water
+
+-----------------------------------
+| Water Blast + Heal = Holy Water |
+-----------------------------------
+
+when geting a new move 
+
+First, select which hero receives the move:
+--------------
+| Hero 1     |
+| Hero 2     |
+|            |
+| Back       |
+--------------
+
+Then select a move:
+--------------------
+| Attack           |
+| Slashing 0 hp 2g |
+|                  |
+| Magic            |
+| heal 5 mp 10 g   |
+|                  |
+| Back             |
+--------------------
+
+when the hero has less then 4 moves 
+
+hero 1 has learnd heal
+
+When a hero already has 4 moves:
+-----------------
+| Replace move  |
+|               |
+| New move      |
+| Heal          |
+|               |
+| Attack        |
+| Tackle        |
+|               |
+| magic         |
+| Water blast   |
+| Nature's wrath|
+| Flame Point   |
+|               |
+| Back          |
+-----------------
+
+Hero 1 has forgotten Nature's Wrath and learned Heal.
+
+10. Weapons
+
+A hero and monster can have a weapon.
+
+A weapon can:
+
+Increase stats
+Give a move
+
+Normally, an entity can only equip one weapon unless an ability allows multiple weapons.
+
+Weapon Moves
+
+Moves gained from weapons are temporary.
+If the weapon is removed, the move is removed.
+
+For example:
+
+Flame Sword
+
+Attack +5
+
+Move:
+Flame Slash
+
+Removing the sword removes Flame Slash.
+
+11. Armor
+
+Armor can:
+
+Increase stats
+Give an affinity
+Give an additional ability
+
+Normally, an entity can equip only one armor unless an ability allows multiple armor pieces.
+
+Heroes can only gain an affinity through armor.
+
+When a hero replaces their armor, the previous armor is moved to the player's Inventory.
+Armor dropped by monsters or bosses is also added to the Inventory.
+
+12. Boss Equipment
+
+Bosses can have unique weapons and armor.
+
+A boss weapon or armor can:
+
+Change the boss's AI
+Provide special moves
+Provide abilities
+Enable special synergies
+
+
+This means boss equipment can be part of the boss's actual combat design.
+
+Boss equipment can potentially be obtained by the player after defeating the boss.
+Each boss equipment item can normally only be obtained once.
+
+13. Boss Equipment Synergies
+
+Some bosses can have a weapon and armor or ability that work together.
+
+For example:
+
+Inferno Blade
+Attack +8
+Move: Flame Slash
+
+Armor:
+Ashen Plate
+Defense +8
+Affinity: Fire
+
+Ability:
+Fire Guard
+
+when Flame Slash is used from the Inferno Blade is used with Ashen Plate armor
+Together they create:
+
+Dragon Inferno
+High Fire damage to all heroes
+Ignores part of Defense
+
+boss synergy can also be trigered with the required equipment and ability.
+
+Boss equipment can potentially be obtained by the player after defeating the boss.
+
+If the player equips the required equipment together, they can use the boss's equipment synergy themselves.
+
+14. Combat
+
+Combat is turn-based.
+
+A battle can contain:
+
+One or more monsters
+One or more heroes
+
+Example:
+
+-------------    -------------
+| Monster 1 |    | Monster 2 |
+| HP 20/20  |    | HP 20/20  |
+-------------    -------------
+
+---------------  ------------
+| Hero 1      |  | Hero 2   |
+| HP 20/20    |  | HP 10/15 |
+| MP 10/10    |  | MP 20/20 |
+| Attack Magic|  ------------
+| Run    Skip |
+--------------
+15. Turn Structure
+
+The player selects actions for the heroes.
+
+For example:
+
+Hero 1:
+
+-----------------
+| Slashing 0 hp |
+| Tackle   1 hp |
+-----------------
+
+Attack -> Slashing -> Monster 1
+
+Hero 2:
+
+--------------------
+| Water Blast 3 mp |
+| Heal        5 mp |
+--------------------
+
+Magic -> Water Blast -> Monster 1
+
+After the heroes have selected their actions, the game checks whether the selected moves create a synergy.
+
+The turn is then resolved.
+
+16. Run
+
+Run is a battle-wide action.
+
+If the player selects Run with a hero, the game stops asking for actions from the remaining heroes.
+
+The party then attempts to escape.
+
+If successful:
+
+Battle ended.
+The heroes escaped.
+
+If unsuccessful, the enemy gets its turn and the battle continues.
+
+17. Skip
+
+A hero can choose Skip.
+
+Skip does not perform an attack or magic move.
+
+A hero with 0 HP automatically uses Skip unless an ability specifically allows them to act differently.
+
+Skip can be a part of a move synergy
+
+18. Moves
+
+Each hero can have a maximum of 4 moves.
+
+Moves include:
+
+Attacks
+Magic
+
+A hero can have:
+
+4 attacks
+4 magic moves
+Any mixture of the two
+
+For example:
+
+1. Tackle
+2. Slashing
+3. Water Blast
+4. Heal
+
+A move can have a Affinity 
+
+19. Getting Moves
+
+Moves can be obtained from:
+
+Weapons — temporary
+Leveling up — permanent
+Shops — permanent
+
+Each hero can have a maximum of 4 moves total.
+When a hero has fewer than 4 moves, a newly learned permanent move can be added without replacing another move.
+When a hero already has 4 moves and learns another permanent move, the player must choose an existing permanent move to replace.
+Weapon-granted moves cannot be selected for replacement.
+
+Example of learning a niew move:
+
+------------------
+| Replace move   |
+|                |
+| new move       |
+| fire point     |
+|                |
+| Replase        |
+| Attack         |
+| Tackle         |
+|                |
+| magic          |
+| Water blast    |
+| Nature's wrath |
+| Heal           |
+|                |
+| Back           |
+------------------
+
+If the player replaces Water Blast with Fire Point, Water Blast is removed.
+you can not remove a move from a wapon using by replacing it
+The old level up move can be obtained again from a shop.
+
+Weapon Moves
+
+A weapon that provides a move only provides that move while the weapon is equipped by a hero.
+A weapon in the Inventory does not provide its move.
+
+When a hero equips a weapon that provides a move, the hero must add the weapon's move to their move list
+If the hero already has 4 moves, the player must choose an existing permanent move to replace.
+
+The weapon-granted move cannot be selected for replacement.
+When a hero unequips a weapon that provides a move, that weapon's move is removed from the hero's move list.
+A weapon can provide very strong stat bonuses while also providing a weak or inconvenient move.
+
+Example of weapon balancing:
+ 
+Great stats + great move
+Amazing stats + terrible move
+Terrible stats + extremely powerful move
+
+20. Attack Moves
+
+Attack moves use the entities Attack stat.
+
+Example:
+
+Tackle
+Attack × 1.5
+Cost: 1 HP
+
+Some attacks can cost HP.
+
+HP-cost attacks should generally provide a reason to sacrifice HP, such as higher damage or a special effect.
+
+HP cannot go below 0.
+
+21. Magic Moves
+
+Magic moves use the entities Magic stat.
+
+Example:
+
+Water Blast
+Magic × 2.1
+Cost: 3 MP
+Affinity: Water
+
+Magic moves normally require MP.
+
+22. MP
+
+MP is used for magic moves.
+
+The number shown next to a magic move is its MP cost.
+
+Example:
+
+Water Blast 3 MP
+Heal        5 MP
+
+magic moves can be used when the entity has less MP than the move costs.
+
+Current MP: 3
+Move cost: 5
+
+The move can be used.
+
+MP becomes 0.
+
+23. Targeting
+
+After selecting a move, the player chooses its target.
+
+Targets can be:
+
+singel target
+
+self
+ally
+enemy
+self or ally
+self or ally or enemy 
+
+multy target
+
+allies
+self and ally
+enemies
+alle except self
+alle
+
+ally is the entities that are on the same side as the move using entity (hero or monster)
+
+For example:
+
+Water Blast -> Monster 1
+Heal -> Hero 2
+
+24. Synergy Moves
+
+When specific moves are selected by different entities during the same turn, they can combine into a synergy move.
+
+The original moves are not used separately.
+
+Instead, the synergy move replaces them.
+
+For example:
+
+Hero 1 -> Water Blast
+Hero 2 -> Heal
+
+can become:
+
+SYNERGY! Holy Water
+
+25. Synergy Effects
+
+Synergies can:
+
+Deal more damage
+Heal
+Ignore some Defense
+Affect multiple entities
+Have other special effects
+
+Example:
+
+Water Blast + Heal
+        ↓
+    Holy Water
+        ↓
+Water damage + healing
+
+26. Synergy Stats
+
+By default, a synergy uses the average stats of the entities involved.
+
+Example:
+
+Hero 1 Magic = 20
+Hero 2 Magic = 10
+
+Average Magic = 15
+
+The synergy uses 15 Magic.
+
+However, a synergy can define its own stat calculation.
+
+Possible calculations include:
+
+Average stats
+Highest stat
+Lowest stat
+Added stats
+The targets entities stats
+Another custom calculation
+
+For example:
+
+This synergy uses the highest Magic stat instead of the average.
+
+27. Hero and Monster Synergies
+
+Synergies are not limited to heroes.
+
+A monster and another monster can have a synergy.
+
+A hero and a monster can potentially have a synergy as well.
+
+This could be used for special mechanics, counters, bosses, or unique encounters.
+
+For example, a boss and a minion might use two moves together to activate a powerful attack.
+
+28. Learning Synergies
+
+Players can discover synergies through:
+
+Information points can reveal synergy combinations.
+
+Players can spend Gold to purchase information about synergy moves in a Shop.
+
+Example:
+
+---------------------------
+| Holy Water 20G          |
+| Burning Catastrophe 25G |
+|                         |
+| Back                    |
+---------------------------
+
+After buying the information:
+
+-----------------------------------
+| Water Blast + Heal = Holy Water |
+-----------------------------------
+
+-----------------------------------------------------
+| Nature's Wrath + Fire Point = Burning Catastrophe |
+-----------------------------------------------------
+
+
+Once the information has been purchased, 
+it does not cost Gold again when the player selects the synergy information in the shop.
+
+The player can also discover synergies through experimentation.
+
+29. Entity Stats
+
+Heroes and monsters are both entities.
+
+Core stats:
+
+HP
+MP
+Attack
+Magic
+Defense
+
+Additional properties:
+
+Ability
+Affinity
+Weapon
+Armor
+Level
+gold drop
+xp drop
+xp
+Drop Chance
+
+30. HP
+
+HP means Hit Points.
+
+An entity with 0 HP normally cannot perform a move.
+
+They automatically use Skip unless an ability allows something different.
+
+31. MP
+
+MP means Magic Points.
+
+MP is used for magic moves.
+
+Monsters can have MP, but monster MP is not displayed in the battle UI.
+
+MP can be recoverd by levling up, Ability and at a save point
+
+32. Attack
+
+Attack determines the strength of attack moves.
+
+Example:
+
+Attack = 10
+
+Tackle:
+10 × 1.5 = 15 base damage
+
+The actual damage is then affected by Defense and other effects.
+
+33. Magic
+
+Magic determines the strength of magic moves.
+
+Example:
+
+Magic = 10
+
+Water Blast:
+10 × 2.1 = 21 base damage
+
+The actual damage is affected by Defense, affinity, abilities, and other effects.
+
+34. Defense
+
+Defense reduces incoming damage.
+
+Physical attacks use the target's Defense.
+
+Magic moves partially ignore Defense.
+
+For example, if a target has:
+
+Defense: 5
+
+and a physical move deals:
+
+10 damage
+
+the target could take:
+
+10 - 5 = 5 damage
+
+Magic moves can ignore a percentage of Defense.
+
+For example:
+
+Magic ignores 50% of Defense.
+
+Defense = 5
+Effective Defense = 2.5
+
+The final damage is rounded down where required.
+
+The exact damage formula can be adjusted during balancing.
+
+35. Abilities
+
+An entity can have an ability.
+
+Heroes always have an ability.
+
+Monsters do not always have an ability.
+
+Abilities can change combat rules.
+
+Examples:
+
+Second Wind
+
+Once per battle, when HP becomes very low, restore some HP.
+
+Mana Flow
+
+Restore some MP when reaching 0 MP.
+
+Burning Body
+
+Attackers can receive damage when physically attacking the monster.
+
+Pack Hunter
+
+Become stronger when another monster of the same type is alive.
+
+Abilities can also interact with:
+
+Equipment
+Affinity
+Moves
+Synergies
+AI
+
+36. Affinity
+
+Affinity determines elemental strengths and weaknesses.
+
+Current affinities include:
+
+metal
+Water
+Fire
+Nature
+None
+
+the affinities that are in this list are temporary
+
+Heroes can only gain an affinity through armor.
+
+Affinity can affect:
+
+Resistances: 
+exsample a Nature affinity entity takes 75% damage from a water move 
+
+Weaknesses: 
+exsample water affinity move dose 150% more damage to a fire affinity entity 
+
+Abilities: 
+an Ability like fire flare heals the entity if they are hit by a fire affinity move 
+
+Synergies: 
+a synergy move like prismatic beam that changes the affinity 
+of the move to the weaknesses of the targeted entity 
+
+37. Gold drop
+
+Gold is the currency used in shops.
+
+Gold can purchase:
+
+Weapons
+Armor
+Moves
+Monster information
+Synergy information
+recruiting heroes
+
+Gold drop is the amount of Gold awarded when the monster is defeated.
+
+38. XP drop
+
+For heroes, XP is used to level up.
+
+When a hero levels up, their XP resets.
+and their hp and mp is restored to its maximum.
+
+XP drop represents how much XP the heroes receive for defeating a monster.
+
+Current planned party XP modifiers:
+
+1 hero → 100%
+2 heroes → 75% each
+3 heroes → 66% each
+4 heroes → 50% each
+
+These numbers are not final.
+
+39. Leveling
+
+Every hero and monster type has its own level schema.
+
+The schema defines the entities natural stats at Level 100.
+
+Example:
+
+Level 100
+
+HP:      800
+MP:      400
+Attack:  300
+Magic:   500
+Defense: 200
+
+
+The base stats at other levels can be calculated from the Level 100 values.
+
+Example:
+
+800 / 100 × 25
+= 200 HP at Level 25
+
+The system can also support levels above 100.
+
+Example:
+
+800 / 100 × 150
+= 1200 HP at Level 150
+
+If a calculation results in a decimal, the value is rounded up where appropriate.
+
+For heroes, Defense does not increase automatically through leveling. 
+Defense can instead be increased through Stat Points, armor, and abilities.
+
+40. Stat Points
+
+When a hero levels up, they receive a Stat Point.
+
+The player can spend the point on one of the hero's core stats:
+
+HP
+MP
+Attack
+Magic
+Defense
+
+Example:
+
+---------------------
+| Hero 1 — Level Up |
+|                   |
+| HP       20 → 24  |
+| MP       10 → 12  |
+| Attack   12 → 13  |
+| Magic     8 → 9   |
+| Defense   6 → 6   |
+---------------------
+----------------
+| slect a stat |
+| to increase  |
+| HP       +4  |
+| MP       +0  |
+| Attack   +2  |
+| Magic    +0  |
+| Defense  +4  |
+----------------
+The Level Schema determines the hero's natural growth.
+
+Stat Points allow the player to customize that growth.
+
+The final stat can be thought of as:
+
+Final Stat =
+Base Level Stat
++ Stat Point Bonuses
++ Equipment Bonuses
++ Ability Bonuses
+
+This allows two heroes of the same type and level to have different builds.
+
+41. Hero Builds
+
+Stat points can be used to specialize heroes.
+
+Physical Fighter
+Focus on:
+
+HP
+Attack
+Defense
+
+Mage
+Focus on:
+
+MP
+Magic
+
+Battle Mage
+Focus on:
+
+HP
+Attack
+Magic
+
+The player's stat choices can work together with the hero's:
+
+Moves
+Equipment
+Abilities
+Synergies
+
+42. Move Learning by Level
+
+The level schema also contains a list of moves learned at specific levels.
+
+Example:
+
+Level 1  → Tackle
+Level 5  → Slashing
+Level 10 → Water Blast
+Level 20 → Heal
+
+Leveling up can therefore increase stats and unlock new moves.
+
+If the hero already has 4 moves, the player must choose which move to replace.
+
+43. Monster Stats
+
+Monsters can have level ranges rather than one fixed level.
+
+Example:
+
+Golden Goblin
+
+Level: 10-12
+HP: 7-10
+MP: 0
+Attack: 15-17
+Magic: 0
+Defense: 25-30
+XP: 600
+Gold: 125
+
+This allows the same monster type to appear at different strengths.
+
+44. Encounter Chance
+
+Encounter Chance is only used by monsters.
+
+It determines the chance that the monster will appear in the encounter table of a map.
+
+Example:
+
+Forest Goblin  40%
+Red Slime      30%
+Forest Wolf    20%
+Forest Wolf X2 10%
+
+The encounter table can change between maps.
+
+45. Drop Chance
+
+Monsters can have weapons and armor associated with them.
+
+When the monster is defeated, the associated equipment can have a chance to drop.
+
+For example:
+
+Flame Goblin
+
+Fire Sword:
+Drop Chance: 10%
+
+Fire Armor:
+Drop Chance: 5%
+
+This gives the player a reason to fight certain monsters repeatedly.
+monsters can only drop the equipment they are using 
+
+46. Monster Design
+
+Monsters should not only differ through their stats.
+
+They can have different:
+
+Abilities
+Moves
+Affinities
+AI behavior
+Synergies
+Equipment
+Drop tables
+
+For example:
+
+Forest Goblin
+
+Simple physical attacker.
+
+Boiling slime
+
+Fire monster that punishes physical attacks.
+
+Forest Wolf
+
+Becomes stronger when another Wolf is alive.
+
+Fairy
+
+Has powerful magic but tries to flee after several turns.
+
+This makes different encounters require different strategies.
+
+47. Bosses
+
+Bosses are represented by # on maps.
+
+After a boss is defeated, it leaves the map and cannot normally be fought again.
+
+Bosses should not simply be stronger monsters with more HP.
+
+Bosses can have:
+
+Unique AI
+Unique abilities
+Unique moves
+Unique equipment
+Unique equipment synergies
+Multiple AI phases
+Special reactions to player actions
+
+48. Monster AI
+
+Bosses and som monsters can have their own AI rules.
+
+Instead of randomly selecting moves, a monster or boss can react to the battle.
+
+Example boss ai:
+
+If HP > 75%:
+    Use normal AI
+
+If HP <= 75%:
+    Use aggressive AI
+
+If HP <= 40%:
+    Activate special ability
+    Use powerful attacks more often
+
+Bosses can also react to the player's actions.
+
+For example:
+
+If player uses Fire:
+    Use Fire Counter
+
+If player repeatedly uses Magic:
+    Use Magic Shield
+
+If player heals:
+    Target the healer
+
+This makes each boss feel different.
+
+49. Example Boss — Ashen Knight
+Level: 8
+
+HP: 180
+MP: 40
+
+Attack: 22
+Magic: 15
+Defense: 15
+
+Affinity: Fire
+
+Ability: Burning Resolve
+
+Weapon: Inferno Blade
+Armor: Ashen Plate
+
+Phase 1
+Above 75% HP:
+
+Flame Slash
+Pommel Strike
+Guard
+
+Phase 2
+75% HP or lower:
+
+Flame Slash
+Fire Burst
+Flame Slash
+Guard
+
+Phase 3
+40% HP or lower:
+
+Flame Slash
+Fire Burst
+Dragon Inferno
+Flame Slash
+
+The boss stops using Guard and becomes much more aggressive.
+
+Bosses can ignore the 4-move cap.
+
+50. Boss Abilities
+
+Boss abilities can change when certain conditions are met.
+
+Burning Resolve
+
+When the Ashen Knight reaches 40% HP:
+
+Attack +10
+
+The ability remains active for the rest of the fight.
+
+Boss abilities can also alter AI, moves, synergies, or other combat rules.
+
+51. Boss Rewards
+
+Bosses can reward:
+
+Large amounts of XP and Gold
+Unique weapons
+Unique armor
+
+Boss equipment can allow the player to use the same abilities or synergies that made the boss dangerous.
+
+This creates a reward loop:
+
+Boss mechanic
+      ↓
+Player learns how it works
+      ↓
+Player defeats boss
+      ↓
+Player obtains boss equipment
+      ↓
+Player can use part of the boss's strategy
+
+52. inventory
+
+The Inventory stores equipment that the player owns but is not currently using.
+
+Equipment can enter the Inventory when:
+    The player purchases new equipment and replaces currently equipped equipment.
+    A monster drops equipment.
+    A boss rewards the player with equipment.
+    The player removes equipment from a hero.
+
+The Inventory contains:
+    Weapons
+    Armor
+
+The player can open the Inventory by pressing the I key on the keyboard.
+
+Example:
+--------------------
+| Inventory        |
+|                  |
+| Weapon           |
+| Iron Sword       |
+| Inferno Blade    |
+|                  |
+| Armor            |
+| Fire Charm Armor |
+| Ashen Plate      |
+|                  |
+| Back             |
+--------------------
+
+Selecting a piece of equipment opens the hero selection screen.
+The hero's previously equipped equipment is moved into the Inventory.
+
+53. Possible Future Features
+
+Maps can eventually contain more than the basic spaces.
+
+Possible additions:
+
+for the map:
+Treasure
+Hidden paths
+Locked doors
+NPCs
+Optional bosses
+One-way paths
+Puzzle spaces
+Special encounter points
+Secret areas
+
+for the player:
+
+Sell equipment at Shops
+
+A reset system for stat points.
+
+slecting wat recruited heros are in the party
+
+Enter generally as interact with the current point
+
+a way to order the inventory
+
+multiple save files
+
+procedural maps
+
+A world map 
+so the player can sea how all the maps conect
+
+Ultra Synergies
+alow a synergy with a synergy + move
+
+54. Combat Design Principles
+
+The combat system should focus on planning and interaction rather than simply increasing numbers.
+
+A player should think:
+
+Which moves should I select?
+
+Which enemy should I target?
+
+Can I create a synergy?
+
+Should I use a powerful move now or save MP?
+
+Should I risk an HP-cost attack?
+
+Should I heal?
+
+Should I try to run?
+
+What does this boss appear to be preparing?
+
+Which hero should receive this equipment?
+
+Which four moves should I keep?
+
+The goal is for decisions to matter.
+
+55. Development Plan
+
+The entire game should not be built at once.
+
+The first prototype should be a small vertical slice.
+
+Prototype
+1 map
+2 heroes
+3 monsters
+1 shop
+1 information point
+4-8 moves
+1-2 synergies
+1 boss
+1 boss equipment synergy
+
+The prototype should be playable from beginning to end.
+
+After testing it, adjust:
+
+Damage formulas
+XP
+Gold
+MP costs
+HP costs
+Defense
+Encounter chances
+Synergy power
+Boss difficulty
+Leveling
+Stat points
+
+Only after the core combat is fun should the game be expanded with more maps, heroes, monsters, bosses, and mechanics.
+
+56. Current Design Philosophy
+
+The game should be easy to understand at a basic level but have depth when the player learns the systems.
+
+A new player should understand:
+
+Attack
+Magic
+Run
+Skip
+
+But an experienced player can think about:
+
+Equipment
+Abilities
+Affinity
+Move slots
+Stat builds
+Synergies
+Monster combinations
+Boss AI
+Boss equipment
+Boss synergies
+
+The complexity should come from how the systems interact, rather than from having hundreds of separate mechanics.
+
+57. Core Identity
+
+The game can be summarized as:
+
+A top-down ASCII RPG focused on strategic turn-based combat, limited move sets, customizable heroes, and powerful move synergies.
+
+The most unique parts of the game are:
+
+Four-move limit
+Planning moves for multiple heroes
+Synergy moves replacing the original moves
+Heroes customizable through stat points
+Equipment that changes available moves and abilities
+Monsters with different behaviors and abilities
+Bosses with unique AI
+Boss equipment that creates special synergies
+Information systems that let players learn about enemies and synergies
+ASCII maps that connect exploration and combat

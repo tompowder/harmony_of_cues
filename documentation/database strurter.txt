@@ -1,0 +1,360 @@
+//done on https://dbdiagram.io
+
+Table maps {
+  id integer [primary key]
+  name varchar
+  map_data text
+}
+
+Ref : points.map_id  ?> maps.id
+
+Table points {
+  id integer [primary key]
+  map_id integer [not null]
+  name varchar
+  x integer
+  y integer
+}
+
+Table shop_points {
+  id integer [primary key]
+  point_id integer [not null, unique] 
+}
+
+Ref : points.id - shop_points.point_id
+
+Table shop_equipment {
+  id integer [primary key]
+  shop_point_id integer [not null] 
+  equipment_id integer [not null] 
+  price integer
+
+  indexes {(shop_point_id, equipment_id) [unique]}
+}
+
+Ref : shop_equipment.shop_point_id ?> shop_points.id
+
+Table shop_infos {
+  id integer [primary key]
+  shop_point_id integer [not null] 
+  info_id integer [not null] 
+  price integer
+
+  indexes {(shop_point_id, info_id) [unique]}
+}
+
+Ref : shop_infos.shop_point_id ?> shop_points.id
+
+Table shop_moves {
+  id integer [primary key]
+  shop_point_id integer [not null] 
+  move_id integer [not null] 
+  price integer
+
+  indexes {(shop_point_id, move_id) [unique]}
+}
+
+Ref : shop_moves.shop_point_id ?> shop_points.id
+
+Table info_points {
+  id integer [primary key]
+  point_id integer [not null, unique] 
+  info_id integer [not null, unique] 
+
+  indexes {(point_id, info_id) [unique]}
+}
+
+Ref : points.id - info_points.point_id
+
+Table infos {
+  id integer [primary key]
+  info_type ENUM (monster, boss, synergy, other) [not null]
+  info_condition ENUM (wild, pristine) [not null]
+  info_title varchar [not null] 
+  info_text text [not null] 
+}
+
+Ref : infos.id - info_points.info_id
+
+Table transition_points {
+  id integer [primary key]
+  point_id integer [not null, unique]
+  target_map_id integer [not null]
+  target_x integer 
+  target_y integer 
+}
+
+Ref : points.id - transition_points.point_id
+Ref : transition_points.target_map_id > maps.id
+
+Table boss_points {
+  id integer [primary key]
+  point_id integer [not null, unique] 
+  encounter_id integer [not null, unique] 
+}
+
+Ref : points.id - boss_points.point_id
+Ref : boss_points.encounter_id - encounters.id
+
+Table encounters {
+  id integer [primary key]
+  map_id integer [not null]
+  encounter_chance integer [not null] // min 1 max 100
+}
+
+
+Ref : maps.id < encounters.map_id
+
+Table encounter_monsters {
+  id integer [primary key]
+  encounter_id integer [not null]
+  model_monster_id integer [not null]
+  min_level integer [not null]
+  max_level integer [not null]
+  quantity integer [not null]
+}
+
+Ref : encounter_monsters.encounter_id > encounters.id
+Ref : encounter_monsters.model_monster_id < model_monsters.id
+
+Table recruitment_points {
+  id integer [primary key]
+  point_id integer [not null, unique]
+  model_hero_id integer [not null] 
+  condition json [not null] 
+}
+
+Ref : points.id - recruitment_points.point_id
+Ref : recruitment_points.model_hero_id > model_heroes.id
+
+Table players {
+  id integer [primary key]
+  map_id integer [not null]
+  name varchar [not null] 
+  gold integer [not null] 
+  x integer
+  y integer
+}
+
+Ref : maps.id < players.map_id
+
+Table player_infos {
+  id integer [primary key]
+  player_id integer [not null] 
+  info_id integer [not null] 
+
+  indexes {(player_id, info_id) [unique]}
+}
+
+Ref : player_infos.player_id > players.id
+Ref : player_infos.info_id > infos.id
+
+Table player_defeated_monsters {
+  id integer [primary key]
+  player_id integer [not null] 
+  model_monster_id integer [not null] 
+
+  indexes {(player_id, model_monster_id) [unique]}
+}
+
+Ref : player_defeated_monsters.player_id > players.id
+Ref : player_defeated_monsters.model_monster_id > model_monsters.id
+
+Table player_defeated_bosses {
+  id integer [primary key]
+  player_id integer [not null] 
+  boss_point_id integer [not null] 
+
+  indexes {(player_id, boss_point_id) [unique]}
+}
+
+Ref : player_defeated_bosses.player_id > players.id
+Ref : player_defeated_bosses.boss_point_id > boss_points.id
+
+Table player_recruitments {
+  id integer [primary key]
+  player_id integer [not null] 
+  recruitment_point_id integer [not null] 
+
+  indexes {(player_id, recruitment_point_id) [unique]}
+}
+
+Ref : player_recruitments.player_id > players.id
+Ref : player_recruitments.recruitment_point_id > recruitment_points.id
+
+Table model_heroes {
+  id integer [primary key]
+  entity_id integer [not null]
+  hero_stat_point_id integer [not null]
+  level integer [not null] 
+}
+
+Ref : model_heroes.entity_id - entities.id
+Ref : model_heroes.hero_stat_point_id - hero_stat_points.id
+
+Table saved_heroes {
+  id integer [primary key]
+  player_id integer [not null]
+  hero_stat_point_id integer [not null]
+  model_hero_id integer [not null]
+  level integer [not null] 
+  xp integer [not null] 
+}
+
+Ref : saved_heroes.model_hero_id > model_heroes.id 
+Ref : saved_heroes.player_id > players.id
+Ref : saved_heroes.hero_stat_point_id - hero_stat_points.id
+
+Table hero_stat_points {
+  id integer [primary key]
+  stat_points_hp integer [not null] 
+  stat_points_mp integer [not null] 
+  stat_points_attack integer [not null] 
+  stat_points_magic integer [not null] 
+  stat_points_defense integer [not null]
+}
+
+Table model_monsters {
+  id integer [primary key]
+  entity_id integer [not null]
+  gold_drop integer [not null]
+  xp_drop integer [not null] 
+  boss bool [not null] 
+  ai json [not null] 
+}
+
+Ref : model_monsters.entity_id - entities.id
+
+Table entities {
+  id integer [primary key]
+  level_schema_id integer [not null]
+  affinity_id integer [not null] 
+  ability_id integer [not null] 
+  name varchar [not null]
+}
+
+Ref : entities.level_schema_id < level_schemas.id
+Ref : entities.affinity_id < affinities.id
+Ref : entities.ability_id < abilities.id
+
+Table level_schemas {
+  id integer [primary key]
+  max_hp integer [not null]
+  max_mp integer [not null]
+  max_attack integer [not null] 
+  max_magic integer [not null] 
+  max_defense integer [not null] 
+  max_xp integer [not null] 
+}
+
+Table level_schema_moves {
+  id integer [primary key]
+  level_schema_id integer [not null] 
+  move_id integer [not null] 
+  level_requirement integer [not null] 
+}
+
+Ref : level_schema_moves.move_id ?< moves.id
+Ref : level_schema_moves.level_schema_id ?> level_schemas.id
+
+Table moves {
+  id integer [primary key]
+  affinity_id integer [not null] 
+  name varchar [not null] 
+  type ENUM (attack, magic) [not null]
+  power decimal
+  effect json
+  description string
+  cost integer
+  target ENUM (self, ally, allies, self_or_ally, self_and_ally, self_or_ally_or_enemy, enemy, enemies, all_except_self, all) [not null]
+}
+
+Ref : moves.affinity_id < affinities.id
+
+Table synergies {
+  id integer [primary key]
+  move_id integer [not null]
+  calculation json [not null]
+}
+
+Ref : synergies.move_id ?< moves.id
+
+Table synergy_moves {
+  id integer [primary key]
+  move_id integer [not null]
+  synergy_id integer [not null]
+  participant ENUM (self, ally, enemy, ally_or_enemy) [not null]
+}
+
+Ref : synergy_moves.move_id > moves.id
+Ref : synergy_moves.synergy_id > synergies.id
+
+Table equipment_monsters {
+  id integer [primary key]
+  equipment_id integer [not null]
+  entity_id integer [not null]
+  drop_chance integer // min 1 max 100
+}
+
+Ref : equipment_monsters.equipment_id > equipment.id
+Ref : equipment_monsters.entity_id > entities.id
+
+Table equipment_saved_hero {
+  id integer [primary key]
+  inventory_id integer [not null]
+  saved_hero_id integer [not null]
+}
+
+Ref : equipment_saved_hero.inventory_id	 ?> inventories.id	
+Ref : equipment_saved_hero.saved_hero_id ?> saved_heroes.id
+
+Table inventories {
+  id integer [primary key]
+  equipment_id integer [not null]
+  player_id	 integer [not null]
+}
+
+Ref : inventories.equipment_id ?> equipment.id	
+Ref : inventories.player_id ?> players.id
+
+Table equipment {
+  id integer [primary key]
+  affinity_id integer [not null] 
+  ability_id integer [not null] 
+  move_id integer [not null]
+  equipment_type ENUM (weapon, armor) [not null]
+  name varchar [not null] 
+  boost_hp integer [not null]
+  boost_mp integer [not null]
+  boost_attack integer [not null] 
+  boost_magic integer [not null] 
+  boost_defense integer [not null] 
+}
+
+Ref : equipment.affinity_id < affinities.id
+Ref : equipment.ability_id < abilities.id
+Ref : equipment.move_id ?< moves.id
+
+Table affinities {
+  id integer [primary key]
+  name varchar [not null] 
+}
+
+Table affinity_relationships {
+  id integer [primary key]
+  affinity_id integer [not null] 
+  target_affinity_id integer [not null]
+  multiplier DECIMAL
+
+  indexes {(affinity_id, target_affinity_id) [unique]}
+}
+
+Ref : affinity_relationships.affinity_id < affinities.id
+Ref : affinity_relationships.target_affinity_id < affinities.id
+
+Table abilities {
+  id integer [primary key]
+  name varchar [not null] 
+  description string
+  effect json
+}

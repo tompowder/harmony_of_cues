@@ -1,0 +1,1328 @@
+Application Logic
+
+This document describes how the game should work internally and how the application should respond to player actions.
+Some systems are still being designed. These sections describe the current planned behavior and can be changed during development and balancing.
+
+
+1. Display and Font
+
+The game uses an ASCII-based interface.
+The font used by the game must have equal spacing between every character.
+Each character should occupy the same amount of horizontal space.
+This is important because the maps use ASCII characters and need to stay aligned.
+The font should behave similarly to a monospace font, such as the font used by a basic text editor.
+
+
+2. Start Menu
+
+When the game starts, the player sees:
+
+-------------
+| continue* |
+| new game  |
+-------------
+
+The * shows which option is currently selected.
+The player can move the selection using the arrow keys and press Enter to select an option.
+
+Continue
+
+If the player selects Continue:
+Load the player's data from the player table.
+Load the player's current map.
+Load the player's current X and Y coordinates.
+Load the required map data and points.
+Continue the game from the saved location.
+
+New Game
+
+If the player selects New Game:
+Ask the player for their name.
+Save the name in the player table.
+Load the hard-coded starting location.
+Load the starting map.
+Start the game.
+
+
+3. Loading a Map
+
+After loading the player's location, the game renders the map on the screen.
+
+The game loads:
+
+Map data
+Points of interest
+Player location
+Available encounters
+Required hero data
+Required monster data
+
+The ASCII map is rendered using the map.map_data field.
+Points of interest are loaded separately using the point tables.
+The player is rendered as X.
+
+
+4. Player Movement
+
+The player moves using the arrow keys.
+The player can also press Enter to remain on the current tile without moving.
+
+When the player moves:
+
+Check whether the destination tile can be entered.
+If it cannot be entered, do not move the player.
+If it can be entered, update the player's X and Y coordinates.
+Render the player at the new location.
+Check whether the player has entered or interacted with a special point.
+
+The player's position is stored in the player table.
+
+
+5. Walkable Tiles
+
+The game must detect what the player is attempting to walk into.
+Walls cannot be entered.
+
+For example:
+
+| = wall
+- = wall
+
+If the player attempts to move into a wall, the movement is cancelled.
+The player remains on their current tile.
+
+The same system can later be extended for other blocked or special map tiles.
+
+6. Save Points
+
+Save Points are represented by: S
+
+Save Points are blocked map points. The player does not move onto the S tile.
+When the player attempts to move onto a Save Point, the Save Point menu is opened instead.
+
+----------------------
+| hp and mp restored |
+|                    |
+| Save and continue  |
+| Save and quit      |
+|                    |
+| Exit               |
+----------------------
+
+When a Save Point is activated The hp and mp of all heroes in the current party is restored to maximum.
+
+If the player selects Save and Continue:
+Update the player's current location in the database.
+Update the player's saved hero data in the database.
+Update the player's equipment ownership and Inventory in the database.
+Update which equipment is currently equipped by each hero.
+Return the player to the map.
+Continue playing from the Save Point.
+
+The saved player data should contain enough information to continue the game from the current location.
+
+If the player selects Save and Quit:
+Update the player's current location in the database.
+Update the player's saved hero data in the database.
+Update the player's equipment ownership and Inventory in the database.
+Update which equipment is currently equipped by each hero.
+Save all other required player progress.
+Return the player to the Start Menu.
+
+Exit
+The player returns to the map and continues playing.
+
+7. Shop Point
+
+Shop Point are represented by: $
+
+When the player attempts to move onto a Shop Point, the Shop menu is opened.
+
+----------------
+|     SHOP     |
+|              |
+| Gear         |
+| Moves        |
+| Info         |
+| Exit         |
+----------------
+
+The player can select:
+
+Gear
+Moves
+Info
+Exit
+
+Selecting Exit closes the Shop and returns the player to the map.
+you can slect Gear, Move and Info
+
+7.1 Shop Gear
+
+When the player selects Gear, the game first asks which hero should receive the equipment.
+
+--------------
+| Hero 1     |
+| Hero 2     |
+|            |
+| Back       |
+--------------
+
+After selecting a hero, the available equipment is displayed.
+
+------------------------
+| Weapon               |
+| Iron Sword 15G       |
+|                      |
+| Armor                |
+| Leather Armor 10G    |
+| Fire Charm Armor 20G |
+|                      |
+| Back                 |
+------------------------
+
+When the player highlights a piece of equipment (*), the equipment's 
+information is displayed next to the selection menu.
+
+------------------------ --------------------------
+| Weapon               | | name: Fire Charm Armor |
+| Iron Sword 15G       | | affinity: fire         |
+|                      | | Ability: fire guard    |
+| Armor                | | reduced fire affinity  |
+| Leather Armor 10G    | | damage by 20%          |
+| Fire Charm Armor 20G*| |                        |
+|                      | | hp      + 10           |
+| Back                 | | Defense + 10           |
+------------------------ --------------------------
+
+When the player selects equipment, the game displays a comparison between the 
+currently equipped equipment and the new equipment.
+
+-----------------------
+| Sword -> Iron Sword |
+|                     |
+| hp      2 -> 0      |
+| Defense 0 -> 3      |
+| Attack  3 -> 7      |
+|                     |
+| new move Iron Slash |
+| removed move Slash  |
+|                     |
+| Buy 15G             |
+| Back                |
+-----------------------
+
+If the player confirms the purchase:
+
+Check that the player has enough Gold.
+If the equipment provides a move and the hero has 4 moves, open the permanent move replacement menu.
+If the player backs out, cancel the purchase and make no changes.
+If the player confirms the move replacement, remove the required Gold.
+Put the old equipment into the Inventory.
+Equip the new equipment.
+Remove the old equipment's temporary move.
+Remove the old equipment's Ability and Affinity.
+Apply the new equipment's stats, Ability, and Affinity.
+Add the new equipment's temporary move.
+
+if the hero has 4 moves and gets a wapon that has a move.
+the move replaser menu of 7.2 will be used but you 
+can back out of learning a new move from a weapon.
+but you cantsel buying the weapon
+
+Weapon-provided moves are temporary.
+A weapon-provided move cannot be removed 
+through the permanent move replacement.
+
+7.2 Shop Moves
+
+When the player selects Moves, the game 
+first asks which hero should receive the move.
+this is the same hero selection menu used in 7.1
+
+After selecting a hero, the available permanent moves are displayed.
+
+--------------------
+| Attack           |
+| Slashing 0 hp 2G |
+|                  |
+| Magic            |
+| heal 5 mp 10 G   |
+|                  |
+| Back             |
+--------------------
+
+When the player highlights a move (*), its details are displayed next to the move list.
+
+-------------------- ----------------------------
+| Attack           | | affinity: holy           |
+| Slashing 0 hp 2G | | type: magic              |
+|                  | | power: 1.5               |
+| Magic            | | cost: 5 mp               |
+| heal 5 mp 10G*   | | target: self or ally     |
+|                  | | effect: heals the target |
+| Back             | ----------------------------
+-------------------- 
+
+after slecting a move 
+If the hero has fewer than 4 permanent moves, 
+purchasing the move adds it to the hero's moves.
+
+--------------------------
+| hero 1 has learnd heal |
+--------------------------
+
+If the hero already has 4 permanent moves, 
+the player must choose a permanent move to replace.
+
+When a hero already has 4 moves you will get this menu to replase a move 
+when you highlights a move it wil show the details about the 
+move is just like the shop move selection
+
+------------------
+| Replace move   |
+|                |
+| New move       |
+| Heal           |
+|                |
+| Attack         |
+| Tackle         |
+|                |
+| magic          |
+| Water blast    |
+| Nature's wrath |
+| Flame Point    |
+|                |
+| Back           |
+------------------
+
+after slecting to remove Nature's Wrath
+
+----------------------------------=
+| Hero 1 has forgotten            |
+| Nature's Wrath and learned Heal |
+-----------------------------------
+
+The new move replaces the selected permanent move.
+Weapon-provided moves are not valid choices for removal in this menu.
+
+7.3 Shop Info
+after slecting info you get this menu
+
+------------------
+| info type      |
+|                |
+| Monsters       |
+| Synergie moves |
+| Other          |
+|                |
+| Back           |
+------------------
+
+The categories are:
+
+Monsters
+Detailed information about monsters and bosses.
+
+Synergy Moves
+information about synergy combinations.
+
+Other Info
+Detailed information about areas, gameplay systems, and other subjects that are not specifically monsters or synergies.
+
+
+When the player selects Monsters, the game displays available monster and boss information.
+
+-----------------------
+| Monster             |
+| . golden goblin 10G |
+| . Forest Wolf 10G   | 
+|                     |
+| Boss                |
+| # King slime 25G    |
+| # Hop goblin        |
+|                     |
+| Back                |
+-----------------------
+
+The . means it is an encounter.
+The # means it is a boss.
+
+When selecting Golden Goblin, information about the monster can only be obtained if the monster has been defeated.
+When the player buys information about the Golden Goblin from a shop, they receive Pristine info:
+
+when slecting golden goblin
+
+--------------------------
+| Name: Golden Goblin    |
+| Level: 10 - 12         |
+| HP: 7 - 10             |
+| MP: 0                  |
+| Attack: 15 - 17        |
+| Magic: 0               |
+| Defense: 25 - 30       |
+| XP: 600                |
+| Gold: 125              |
+| Ability: Coward        |
+| Will run after 5 turns |
+| Affinity: Metal        |
+| Encounter Chance: 5%   |
+| Description            |
+| A rare goblin variant  |
+| that drops a lot of    |
+| gold and XP and runs   |
+| away if you don't kill |
+| it in time.            |
+| Recommended to use     |
+| magic due to its high  |
+| defense.               |
+|                        |
+| Back                   |
+--------------------------
+
+Once purchased, the information remains owned permanently.
+The player does not pay again to view it.
+thats why the Hop goblin dose not cost gold in the menu as it is alredy purchased
+
+when slecting Synergie moves
+
+---------------------------
+| Holy Water 20G          |
+| Burning Catastrophe 25G |
+|                         |
+| Back                    |
+---------------------------
+
+when slecting synergie move holy water
+
+-----------------------------------
+| Water Blast + Heal = Holy Water |
+-----------------------------------
+
+After the information has been purchased, it becomes permanently owned.
+The player can view it again without paying Gold.
+
+The player does not need to purchase synergy information to use a synergy.
+Synergies can also be discovered through experimentation.
+
+
+when slecting other
+
+Other Information contains Pristine Information 
+that is not specifically about monsters or synergies.
+and the collection of alle the wild info goten from info points
+
+
+----------------------
+| Wild Info          |
+| Golden Goblin      |
+|                    |
+| Other Info         |
+| Burning Grove 35G  |
+| Affinity Rules 20G |
+|                    |
+| Back               |
+----------------------
+
+After purchasing information about Burning Grove:
+
+---------------------------------
+| Burning Grove                 |
+|                               |
+| Description                   | 
+| Half of the monsters found    | 
+| here have Fire affinity.      | 
+| Water affinity is recommended | 
+| in Burning Grove.             |
+|                               |
+| monster fond                  |
+| fire goblin                   |
+| fire slime                    |
+| Forest Wolf                   |
+| golden goblin                 | 
+|                               |
+| Back                          |
+---------------------------------
+
+Other Information does not use the monster-defeat requirement
+
+8. Information point
+
+Information point are represented by: I
+
+When the player attempts to move onto an Information Point, the Information Point is activated.
+
+Information Points provide Wild Information.
+
+Wild Information is:
+Free
+Short
+Cryptic
+Intended to give the player useful hints
+Available before the player has defeated the relevant monster
+Not intended to reveal complete statistics or mechanics
+
+example:
+
+------------------------------------
+| There is a rare chance to find a |
+| Golden Goblin in these woods.    |
+| It will flee after some time,    |
+| but if you defeat it in time,    |
+| you will be richly rewarded.     |
+------------------------------------
+
+Wild Information is therefore intended to give the player clues, not complete answers.
+
+9. Recruitment point
+
+Recruitment point are represented by: R
+
+When the player attempts to move onto a Recruitment Point, the recruitment menu is opened.
+
+-------------------------
+| Hero 2 wants to       |
+| join your party       |
+|                       |
+| Recruitment condition |
+| Pay 100 Gold          |
+|                       |
+| Recruit (100G)        |
+| Exit                  |
+-------------------------
+
+The recruitment point displays the hero that
+can be recruited and the condition required to recruit that hero.
+
+Possible recruitment conditions include:
+No condition
+Gold requirement
+Monster-defeat requirement
+Hero stat requirement
+Party level requirement
+
+When the player successfully recruits the hero:
+The recruitment condition is checked.
+The hero is copied from model_hero into the player's saved_hero data.
+The recruited hero becomes available to the player.
+The Recruitment Point is removed from the map.
+
+
+10. transition point
+
+transition point are represented by: < or >
+
+when the player gose to the transition point they wil be send to an other map
+
+> is used to go to a map you have not bin to
+< is for a map you have bin to
+
+11. Boss point 
+
+Boss point are represented by: #
+
+When the player attempts to move onto a Boss Point, a boss encounter is started.
+
+The encounter contains:
+The boss
+Potentially additional monsters, if defined by the boss encounter
+
+Boss encounters cannot be escaped using Run.
+If the player selects Run during a boss encounter, Run is unavailable.
+
+After the boss is defeated, the Boss Point is removed and marked as defeated in the database
+
+12. Encounter Points
+
+Encounter points are represented by: .
+
+When the player moves onto an encounter point, the game attempts to trigger an encounter.
+The encounter point itself does not disappear.
+
+For example:
+
+Before:
+X . . .
+
+After moving:
+. X . .
+
+The . remains on the map.
+If the player moves away from the encounter point and later moves onto it again, another encounter can be triggered.
+The player can also press Enter while standing on an encounter point to attempt another encounter without moving.
+
+
+13. Selecting a Random Encounter
+
+When an encounter is triggered:
+Generate a random number between 1 and 100.
+Load the encounters available for the current map.
+Use their encounter_chance values to determine which encounter is selected.
+If the random number does not fall inside an encounter's chance range, no encounter occurs.
+
+Example encounter table:
+
+Red Slime                      30%
+Forest Goblin + Red Slime      30%
+Forest Wolf                    20%
+Forest Wolf x2                 10%
+No encounter                   10%
+
+The total chance should equal 100%.
+
+For example:
+
+1–30   -> Red Slime
+31–60  -> Forest Goblin + Red Slime
+61–80  -> Forest Wolf
+81–90  -> Forest Wolf x2
+91–100 -> No encounter
+
+If the generated number is 26, the player encounters a Red Slime.
+If the generated number is 88, the player encounters two Forest Wolves.
+If the generated number is 93, no encounter occurs.
+
+The exact method used to select the encounter can be implemented using the encounter table and its encounter_chance values.
+
+
+14. Loading an Encounter
+
+When an encounter is selected, the game loads the monsters from encounter_monster.
+An encounter can contain one or multiple monsters.
+
+For example:
+
+Encounter
+
+Goblin x1
+Slime x1
+
+The monster's:
+
+Model
+Level
+Stats
+Moves
+Equipment
+Ability
+Affinity
+AI
+
+are loaded and calculated before combat begins.
+The heroes participating in the encounter are also loaded.
+
+
+15. Calculating Entity Stats
+
+Heroes and monsters use their Level Schema to calculate their base stats.
+The Level Schema contains the entity's Level 100 stats.
+
+Example:
+
+max_hp = 800
+entity.level = 25
+
+The base HP can currently be calculated as:
+800 / 100 × 25 = 200 HP
+
+The final stat is then calculated using other bonuses:
+
+Final Stat =
+Base Level Stat
++ Stat Point Bonuses
++ Equipment Bonuses
++ Ability Bonuses
+
+16. Combat
+
+Combat is turn-based.
+During a turn, the player selects an action for each hero.
+Heroes are selected from left to right.
+
+For example:
+
+Hero 1 → Hero 2 → Hero 3 → Hero 4
+
+Each hero can select:
+
+Attack
+Magic
+Run
+Skip
+
+
+17. Run
+
+Run can only be selected by the first hero.
+If the player selects Run:
+
+Stop asking the remaining heroes for actions.
+Attempt to escape from the encounter.
+If successful, the encounter ends.
+If unsuccessful, the monsters take their turn.
+
+the chance of running from an encounter has to do with
+the average level of the party and the the enemy 
+
+Party Average Level = Sum of Hero Levels / Number of Heroes 
+Enemy Average Level = Sum of Enemy Levels / Number of Enemies
+
+The result is then compared against a random number from 1 to 10.
+
+(Party Average Level - Enemy Average Level) + 7
+
+Escape Value >= Random Number = Escape
+Escape Value < Random Number = Escape fails
+
+this makes it so if the average level of the party is 5 and the enemy is 8 there is a 40% chanse to escape
+
+The exact formula and the +7 balancing value can be changed during development and balancing.
+
+18. Skip
+
+If a hero selects Skip:
+The hero performs no normal move.
+The game moves to the next hero.
+Skip can potentially be used as part of a synergy.
+
+A hero with 0 HP automatically uses Skip unless an ability allows the hero to act.
+
+
+19. Attack and Magic
+
+If the player selects Attack, the game displays the hero's attack moves.
+
+Only moves where:
+
+move.type = attack
+
+are displayed.
+
+If the player selects Magic, the game displays the hero's magic moves.
+
+Only moves where:
+
+move.type = magic
+
+are displayed.
+
+After selecting a move, the player selects its target if the move requires targeting.
+
+
+20. Moves
+
+Moves can:
+
+Deal damage
+Heal
+Negate damage
+Interact with affinities
+Participate in synergies
+
+There are two move types:
+Attack
+Magic
+
+Heroes and normal monsters can have a maximum of 4 moves.
+Bosses can have more than 4 moves.
+
+
+21. Attack Moves
+
+Attack moves use the attacking entity's Attack stat.
+
+Example:
+
+Tackle
+
+Attack = 10
+Power = 1.5
+
+10 × 1.5 = 15 base damage
+
+Attack moves can have an HP cost.
+
+For example:
+
+Tackle
+Power: 1.5
+Cost: 1 HP
+
+If an attack requires more HP than the entity can spend, the move cannot be used.
+
+
+22. Magic Moves
+
+Magic moves use the attacking entity's Magic stat.
+Magic moves have an MP cost.
+
+For example:
+
+Water Blast
+Power: 2.1
+Cost: 10 MP
+
+Magic moves have special MP behavior.
+If the entity has less MP than the move costs, the move can still be used.
+
+Example:
+
+Current MP: 8
+Move cost: 10
+
+Move can be used.
+
+New MP: 0
+
+A magic move cannot be used when the entity has 0 MP.
+
+
+23. Move Power
+
+Every damaging move has a Power value.
+The basic damage calculation starts with:
+
+Attack or Magic × Move Power
+
+Example:
+
+Attack = 10
+Power = 1.5
+
+10 × 1.5 = 15
+
+The final damage is then affected by:
+
+Defense
+Affinity
+Move type
+Abilities
+Other effects
+
+
+24. Move Effects
+
+Moves can have additional effects.
+The move.effect field stores these effects.
+
+Example:
+
+{
+    "extra_type": "heal"
+}
+
+This allows moves to perform actions other than simply dealing damage.
+The complete list of possible effects is not finalized yet.
+
+
+25. Move Affinity
+
+A move can have an Affinity.
+The move's Affinity interacts with the target's Affinity.
+The relationship is stored in affinity_relationships.
+
+Example:
+
+Water -> Fire = 1.50
+Fire  -> Water = 0.75
+
+This means:
+
+Water move against Fire target
+= 150% damage
+
+and:
+
+Fire move against Water target
+= 75% damage
+
+These values are not final and can be changed during balancing.
+
+
+26. Move Targets
+
+Moves can have different targeting rules.
+
+The target type is stored in:
+move.target
+
+self: Targets the entity that used the move.
+
+ally: Targets one entity on the same side as the move user.
+
+enemy: Targets one enemy.
+
+An enemy is an entity on the opposing side of the encounter.
+
+allies: Targets all allies except the entity using the move.
+
+self_or_ally: Targets either the entity using the move or one ally.
+
+self_and_ally: Targets the entity using the move and one ally.
+
+self_or_ally_or_enemy: Can target any single entity in the encounter.
+
+enemies: Targets every enemy in the encounter.
+
+all_except_self: Targets every other entity in the encounter.
+This includes both allies and enemies.
+
+all: Targets every entity in the encounter, including the entity using the move.
+
+
+27. Move Slots
+
+heroes and monsters can have a maximum of 4 moves.
+
+Example:
+
+1. Tackle
+2. Slashing
+3. Water Blast
+4. Heal
+
+Bosses can have more than 4 moves.
+
+Moves can come from:
+
+Leveling
+Shops
+Weapons
+
+Weapon moves are temporary.
+If the weapon is removed, the weapon-provided move is removed.
+
+
+28. Move Synergies
+
+After all entities have selected their moves for the turn, the game checks whether the selected moves create a synergy.
+The game searches the synergy data for matching move combinations.
+If a matching synergy is found, the game checks the participants.
+synergy_moves.participant determines which entities are allowed to perform each required move.
+
+Possible participants are:
+
+self
+ally
+enemy
+ally_or_enemy
+
+If all required participants and moves are correct, the synergy activates.
+The original moves are replaced by the synergy move.
+
+Example:
+
+Hero 1 -> Water Blast
+Hero 2 -> Heal
+
+= SYNERGY Holy Water
+
+Water Blast and Heal are not performed separately.
+
+29. Synergy Calculation
+
+The synergy.calculation field stores the special rules used to calculate the synergy.
+By default, a synergy can use the average stats of the participating entities.
+
+Example:
+
+Hero 1 Magic = 20
+Hero 2 Magic = 10
+
+Average Magic = 15
+
+The synergy then uses 15 Magic.
+A synergy can use a different calculation when required.
+
+Possible calculations include:
+
+Average
+Highest
+Lowest
+Added stats
+Target stats
+Custom calculations
+
+The exact JSON structure is still being designed.
+
+30. Abilities
+
+Abilities activate when specific events or conditions occur.
+The ability.effect field contains the rules for the ability.
+
+For example:
+
+{
+    "trigger": "death",
+    "effect": {
+        "use_move": 15
+    }
+}
+
+The exact list of triggers and effects is not finalized.
+
+Possible triggers could include:
+
+Taking damage
+Dealing damage
+Reaching a certain HP
+Reaching 0 HP
+Using a move
+Starting a turn
+Ending a turn
+Another entity dying
+Using equipment
+Activating a synergy
+
+Abilities can change how combat works.
+
+
+31. Equipment
+
+Equipment is stored in the gear table.
+
+There are two types:
+
+weapon
+armor
+
+Equipment can increase stats using the boost_* fields.
+
+For example:
+
+Attack +5
+Defense +3
+
+
+32. Weapon
+
+Weapons can provide:
+
+Stat bonuses
+Moves
+Abilities
+Affinity
+
+The current intended design is that weapons primarily provide moves.
+Weapon-provided moves are temporary.
+If the weapon is removed, the move provided by the weapon is removed.
+
+
+33. Armor
+
+Armor can provide:
+
+Stat bonuses
+Abilities
+Affinity
+
+Armor is intended to be the main way heroes gain an Affinity.
+The database currently also allows armor to provide a move through gear.move_id.
+Whether armor should actually be able to provide moves is still a design decision.
+
+
+34. Monster AI
+
+Monster AI determines how a monster behaves during combat.
+The AI is stored in:
+
+model_monster.ai
+
+A simple monster could use:
+
+{
+    "move_used": "random"
+}
+
+This means the monster randomly selects from its available moves.
+More complex AI can use conditions, phases, and different move-selection behaviors.
+
+
+35. Boss AI
+
+Bosses can have multiple phases.
+
+Each phase can define:
+
+A trigger
+Available moves
+How moves are selected
+
+Example:
+
+{
+    "phase_1": {
+        "trigger": {
+            "stat": "hp",
+            "amount": "100%"
+        },
+        "moves": [3, 4],
+        "moves_used": "careful"
+    },
+
+    "phase_2": {
+        "trigger": {
+            "stat": "hp",
+            "amount": "75%"
+        },
+        "moves": [3, 4, 6],
+        "moves_used": "random"
+    },
+
+    "phase_3": {
+        "trigger": {
+            "stat": "hp",
+            "amount": "40%"
+        },
+        "moves": [4, 6, 8, 9],
+        "moves_used": "reckless"
+    }
+}
+
+The exact AI JSON structure is not final.
+
+AI Behaviors
+
+Careful
+The monster is more likely to use defensive, healing, or damage-negating moves.
+
+Random
+The monster randomly selects from its available moves.
+
+Reckless
+The monster is more likely to use attacking moves.
+
+Additional behaviors can be added later.
+
+
+36. Turn Order
+
+Turn order is determined after all moves have been selected.
+Synergies are resolved before normal moves.
+
+If both sides create a synergy:
+
+Hero Monster synergy
+    ↓
+Hero synergy
+    ↓
+Monster synergy
+
+Hero synergies are resolved first.
+After synergies, normal moves are resolved.
+Hero Move Order
+Heroes act in the order in which their moves were selected.
+
+Example:
+
+Hero 1 selects first
+Hero 2 selects second
+Hero 3 selects third
+Hero 4 selects fourth
+
+Monster Move Order
+
+Monsters act from left to right.
+
+For example:
+
+Monster 1 | Monster 2 | Monster 3
+first       second      third
+
+37. Taking Damage
+
+The basic damage calculation uses:
+
+Attacking entity's Attack or Magic
+Move Power
+Affinity multiplier
+Target Defense
+
+The current formula is:
+
+((Attack or Magic) x Move Power x Affinity Multiplier) - Effective Defense
+
+for magic moves.
+Magic moves can partially ignore Defense.
+
+For example:
+
+Physical move:
+Effective Defense = Defense
+
+Magic move:
+Effective Defense = Defense × 0.5
+
+38. Ending an Encounter
+
+An encounter continues until all entities on one side have 0 HP.
+
+Heroes Lose
+
+If all heroes reach 0 HP:
+
+The encounter ends.
+The player loses.
+The game returns to the start menu.
+The player is returned to the save point they last saved at.
+
+Heroes Win
+
+If all monsters reach 0 HP:
+
+The encounter ends.
+XP is awarded.
+Gold is awarded.
+Equipment drops are checked.
+Hero leveling is checked.
+The player returns to the map.
+
+
+39. XP Rewards
+
+The heroes receive XP based on the monsters defeated.
+
+The total XP comes from the monsters' XP rewards.
+
+The current planned party modifiers are:
+
+1 hero → 100% each
+2 heroes → 75% each
+3 heroes → 66% each
+4 heroes → 50% each
+
+These values are not final.
+
+The purpose is to prevent a large party from always being strictly better than using fewer heroes.
+This system may be removed if testing shows that it does not improve the game.
+
+40. Leveling Up
+
+After receiving XP, the game checks whether a hero has enough XP to level up.
+The current XP calculation is only a temporary example.
+
+(level_schema.max_xp / 100 × entity.level) < entity.xp
+
+The final XP requirement will increase with each level and will use a more appropriate progression formula.
+
+When a hero levels up:
+
+Increase the hero's level.
+Give the hero a Stat Point.
+Allow the player to select which stat to increase.
+Check whether the hero learns a new move.
+Restore the hero's HP and MP to maximum.
+
+41. Stat Points
+
+When a hero levels up, they receive one Stat Point.
+
+The player can spend the point on:
+
+HP
+MP
+Attack
+Magic
+Defense
+
+The selected stat increases.
+This allows two heroes of the same type and level to have different builds.
+
+
+42. Equipment Drops
+
+After an encounter is won, the game checks the defeated monsters for equipment drops.
+
+A monster can have:
+
+Weapon drop chance
+Armor drop chance
+
+The drop chances are stored in model_monster.
+A monster can only drop equipment that it is using.
+
+For example:
+
+Flame Goblin
+
+Weapon:
+Fire Sword
+Drop Chance: 10%
+
+Armor:
+Fire Armor
+Drop Chance: 5%
+
+After the encounter, the game performs the drop checks.
+and shows this menu if a somthing drops
+
+--------------------------
+| the Flame goblin dropt |
+|                        |
+| name: Fire Armor       |
+| affinity: fire         |
+|                        |
+| hp      + 10           |
+| Defense + 10           |
+|                        |
+| Slect                  |
+| Exit                   |
+--------------------------
+
+after slecting a hero to replase the gear for.
+this is the same hero selection menu used in 7.1
+
+-----------------------------
+| Steel Armor -> Fire Armor |
+|                           |
+| hp      5 -> 10           |
+| Defense 7 -> 10           |
+|                           |
+| Back                      |
+-----------------------------
+
+43. Backend and Frontend Communication
+
+The game needs a way for the frontend to communicate player actions to the backend.
+Two possible approaches are currently being considered.
+
+Option 1 — Page Refresh
+
+PHP processes each action and refreshes the page after every step.
+
+Example:
+
+Player presses Arrow Right
+        ↓
+Request sent to PHP
+        ↓
+PHP processes movement
+        ↓
+Database updated
+        ↓
+Page refreshes
+        ↓
+New map rendered
+
+This is simple to implement but may make the game feel less responsive.
+
+Option 2 — JavaScript Requests
+
+JavaScript sends requests to the Laravel backend without refreshing the entire page.
+
+Example:
+
+Player presses Arrow Right
+        ↓
+JavaScript sends request
+        ↓
+Laravel processes movement
+        ↓
+Database updated
+        ↓
+Response sent to JavaScript
+        ↓
+Screen updated
+
+This would allow the game to feel more like a traditional application while still using Laravel as the backend.
+The final approach has not been decided yet.

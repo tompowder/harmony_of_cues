@@ -1,0 +1,715 @@
+Game Database — MySQL
+
+The game uses a MySQL database to store: 
+maps
+points of interest
+encounters
+players
+heroes
+monsters
+moves
+equipment
+synergies
+
+Tables
+
+maps
+Column		Type
+id		int
+name		varchar
+map_data	text
+
+Purpose:
+Stores the ASCII layout of a map.
+map_data contains the ASCII characters that define the walls, paths, and other parts of the map.
+Points of interest are stored separately in the point table.
+
+
+points
+Column	Type
+id	int
+map_id	int
+name	varchar
+x	int
+y	int
+
+Purpose:
+Stores points of interest that exist on a map.
+
+Examples include:
+Shops
+Information Points
+Recruitment Points
+Boss Points
+Transition Points
+
+x and y determine where the point is located on the map.
+Specific point types have their own tables that reference this table.
+
+
+shop_points
+Column		Type
+id		int
+point_id	int
+
+Purpose:
+Defines which points are shops.
+The point_id references a point from the point table.
+The equipment, moves, and information sold by the shop are stored in shop_gear, shop_move, and shop_info.
+
+
+shop_equipment
+Column		Type
+id		int
+shop_point_id	int
+equipment_id	int
+price		int
+
+Purpose:
+Stores the equipment sold by a shop and its price.
+A shop can sell multiple pieces of equipment.
+
+
+shop_infos
+Column		Type
+id		int
+shop_point_id	int
+info_id		int
+price		int
+
+Purpose:
+Stores the information that can be purchased from a shop and its price.
+The actual information is stored in the info table.
+
+
+shop_moves
+Column		Type
+id		int
+shop_point_id	int
+move_id		int
+price		int
+
+Purpose:
+Stores the moves that can be purchased from a shop and their prices.
+
+
+info_points
+Column		Type
+id		int
+point_id	int
+info_id		int
+
+Purpose:
+Connects an Information Point to the information it provides.
+An Information Point can provide one or more pieces of information.
+
+
+infos
+Column		Type
+id		int
+info_type	enum
+info_condition	enum
+info_title      varchar
+info_text	text
+
+info_type can be:
+monster
+boss
+synergy
+other
+
+info_condition can be:
+wild
+pristine
+
+Purpose:
+Stores information that can be discovered at Information Points or purchased from shops.
+
+
+transition_points
+Column		Type
+id		int
+point_id	int
+target_map_id	int
+target_x	int
+target_y	int
+
+Purpose:
+Defines where a Transition Point sends the player.
+map_id is the destination map.
+x and y are the coordinates where the player appears on the destination map.
+
+
+boss_points
+Column		Type
+id		int
+point_id	int
+encounter_id	int
+
+Purpose:
+Defines a Boss Point and determines which encounter starts when the player interacts with it.
+The encounter_id references the boss encounter in the encounter table.
+Each point can only be one Boss Point.
+Each boss point can only reference one encounter.
+
+The player's completed boss points are stored in player_defeated_bosses.
+
+
+encounters
+Column			Type
+id			int
+map_id			int
+encounter_chance	int
+
+Purpose:
+Defines one possible encounter on a map.
+map_id determines which map the encounter belongs to.
+encounter_chance determines how likely this encounter is to be selected when an encounter is triggered.
+An encounter can contain one or multiple monsters. The monsters inside the encounter are stored in encounter_monster.
+
+For example:
+Encounter 1 — 40%
+    Goblin x1
+
+Encounter 2 — 30%
+    Goblin x1
+    Slime x1
+
+Encounter 3 — 10%
+    Wolf x2
+    Slime x1
+
+This allows different combinations of monsters to appear as separate encounter possibilities.
+
+
+encounter_monsters
+Column			Type
+id			int
+encounter_id		int
+model_monster_id	int
+min_level		int
+max_level		int
+quantity		int
+
+Purpose:
+Defines which monsters appear in an encounter.
+model_monster_id determines the monster type.
+min_level and max_level define the possible level range of the monster.
+quantity determines how many of that monster appear.
+
+For example:
+
+Encounter
+
+Goblin
+Level: 5–8
+Quantity: 1
+
+Slime
+Level: 4–6
+Quantity: 1
+
+This means the encounter contains one Goblin and one Slime, 
+with each monster receiving a randomly selected level within its defined range.
+
+
+recruitment_points
+Column		Type
+id		int
+point_id	int
+model_hero_id	int
+condition	json
+
+Purpose:
+Defines a Recruitment Point and the hero that can be recruited there.
+model_hero_id identifies the hero that can be recruited.
+condition stores the requirements that must be fulfilled before the hero can be recruited.
+
+Possible conditions include:
+No condition
+Pay a certain amount of Gold
+Defeat a specific monster
+Have a hero with a specific stat
+Have all required heroes at a specific level
+Other conditions added later
+
+The Recruitment Point creates a saved_hero for the player when the hero is recruited.
+The completed Recruitment Points are stored in player_recruitments 
+so that the same recruitment cannot be completed twice.
+
+
+Players
+player
+Column	Type
+id	int
+map_id	int
+name	varchar
+gold	int
+x	int
+y	int
+
+Purpose:
+Stores the player's current world state.
+
+This includes:
+Current map
+Player name
+Gold
+Current X coordinate
+Current Y coordinate
+
+The player's heroes, discovered information, defeated monsters, defeated bosses, recruitment progress, 
+and inventory are stored in separate tables.
+
+
+player_infos
+Column		Type
+id		int
+player_id	int
+info_id		int
+
+Purpose:
+Stores which pieces of information the player has discovered or purchased.
+Once information has been obtained, the player can access it again without purchasing it again.
+
+
+player_defeated_monsters
+Column			Type
+id			int
+player_id		int
+model_monster_id	int
+
+Purpose:
+Stores which monster types the player has defeated.
+This can be used for recruitment conditions and for 
+determining whether the player is allowed to obtain detailed information about a monster.
+
+For example:
+Defeat Golden Goblin
+The player has fulfilled this requirement if they have previously defeated a Golden Goblin.
+
+
+player_defeated_bosses
+Column		Type
+id		int
+player_id	int
+boss_point_id	int
+
+Purpose:
+is to store which boss points have bin defeated.
+this is so the player cant redo a boss
+
+
+player_recruitments
+Column			Type
+id			int
+player_id		int
+recruitment_point_id	int
+
+Purpose:
+is to store which recruitment point has bin compleated.
+this is so a player can't get the same hero twise
+
+
+model_heroes
+Column			Type
+id			int
+entity_id		int
+hero_stat_point_id	int
+level			int
+
+Purpose:
+Defines the base information for a hero that can be recruited.
+model_hero is not the hero saved for the player.
+It is the hero model/template used when creating a player's saved_hero.
+The model contains the hero's starting level and Stat Point values.
+When a player recruits the hero, a saved_hero is created from this model.
+
+
+saved_heroes
+Column			Type
+id			int
+player_id		int
+hero_stat_point_id	int
+model_hero_id		int
+level			int
+xp			int
+
+Purpose:
+Stores the actual hero that belongs to a player.
+This is the player's saved version of a recruited hero.
+
+It stores the hero's current:
+player
+Hero model
+Level
+XP
+Stat Point investments
+
+Two players can recruit the same model_hero but have different saved_hero data.
+The model_hero_id allows the game to know which hero template the saved hero originally came from.
+
+hero_stat_points
+Column			Type
+id			int
+stat_points_hp 		int
+stat_points_mp 		int
+stat_points_attack 	int
+stat_points_magic 	int
+stat_points_defense 	int
+
+Purpose:
+Stores the stat point distribution for a hero.
+The stat points determine how a hero's available stat points are distributed
+
+This table is used by both model_heroes and saved_heroes.
+A model hero can therefore have a starting stat distribution, while a saved hero can have its own current distribution.
+
+
+model_monster
+Column			Type
+id			int
+entity_id		int
+gold_drop		int
+xp_drop			int
+ai			json
+boss			bool
+
+Purpose:
+Defines a monster type.
+The monster uses an entity for its common properties
+
+contains monster-specific information such as:
+XP reward
+Gold reward
+Equipment drop chances
+AI
+Whether the monster is a boss
+
+The monster's level and base stats are determined using its Level Schema.
+Equipment dropped by monsters is defined separately in equipment_monsters.
+
+
+entities
+Column		Type
+id		int
+level_schema_id	int
+affinity_id	int
+ability_id	int
+name		varchar
+
+Purpose:
+Stores properties shared by heroes and monsters.
+
+An entity can have:
+A name
+A Level Schema
+An Affinity
+An Ability
+
+Both heroes and monsters use the Entity system.
+This allows common systems such as leveling, abilities, 
+and affinity to work for both heroes and monsters.
+
+
+level_schemas
+Column		Type
+id		int
+max_hp		int
+max_mp		int
+max_attack	int
+max_magic	int
+max_defense	int
+max_xp		int
+
+Purpose:
+Defines how an entity's stats and progression scale with level.
+The max_* stats represent the entity's base stats at Level 100.
+
+Example:
+Level 100
+
+HP:      800
+MP:      400
+Attack:  300
+Magic:   500
+Defense: 200
+
+A Level 25 entity could calculate its base HP as:
+800 / 100 × 25 = 200 HP
+The exact XP formula will use a different calculation.
+The Level Schema also determines which moves an entity can learn through level_schema_move.
+
+
+level_schema_moves
+Column			Type
+id			int
+level_schema_id		int
+move_id			int
+level_requirement	int
+
+Purpose:
+Defines which moves an entity learns at specific levels.
+The level_requirement determines the minimum level required to learn the move.
+
+Example:
+Level 1  → Tackle
+Level 5  → Slashing
+Level 10 → Water Blast
+Level 20 → Heal
+
+
+move_entities
+Column		Type
+id		int
+move_id		int
+entity_id	int
+slot		int
+source		enum
+
+source can be:
+level
+shop
+weapon
+
+Purpose:
+Stores the moves an entity currently has.
+slot determines which move slot contains the move.
+source records where the move came from.
+
+For example:
+Hero 1
+
+Slot 1 → Tackle        → level
+Slot 2 → Slashing      → level
+Slot 3 → Heal          → shop
+Slot 4 → Flame Slash   → weapon
+
+Moves gained from weapons are temporary. If the weapon is removed, the weapon move is removed as well.
+
+
+moves
+Column		Type
+id		int
+affinity_id	int
+name		varchar
+description     varchar
+type		enum
+power		decimal
+effect		json
+cost		int
+target		enum
+
+type can be:
+attack
+magic
+
+target can be:
+self
+ally
+allies
+self_or_ally
+self_and_ally
+self_or_ally_or_enemy
+enemy
+enemies
+all_except_self
+all
+
+Purpose:
+Defines what a move is and how it works.
+
+A move contains its:
+Name
+Type
+Affinity
+Power
+Cost
+Targeting rules
+Special effects
+
+The effect field stores additional effects that require more complex data.
+
+
+synergies
+Column		Type
+id		int
+move_id		int
+calculation	json
+
+Purpose:
+Defines a synergy and the special calculation used when the synergy activates.
+move_id identifies the move created when the synergy is activated.
+calculation stores the special rules used to calculate the synergy's result.
+
+For example, a synergy could use:
+Average Magic
+Highest Magic
+Added Attack
+Custom calculations
+
+
+synergy_moves
+Column		Type
+id		int
+move_id		int
+synergy_id	int
+participant	enum
+
+participant can be:
+self
+ally
+enemy
+ally_or_enemy
+
+Purpose:
+Defines which moves are required to activate a synergy and which type of entity must perform each move.
+For example:
+Water Blast + Heal = Holy Water
+
+The table stores the moves required for the synergy.
+self can be used for boss or monster synergies where the same entity must perform a specific move.
+
+
+equipment
+Column		Type
+id		int
+affinity_id	int
+ability_id	int
+move_id		int
+equipment_type	enum
+name		varchar
+boss_equipment	bool
+boost_hp	int
+boost_mp	int
+boost_attack	int
+boost_magic	int
+boost_defense	int
+
+Purpose:
+Defines weapons and armor.
+
+gear_type can be:
+weapon
+armor
+
+Equipment can:
+Increase stats
+Provide an Ability
+Provide an Affinity
+Provide a Move
+
+Example:
+Flame Sword
+
+Type: Weapon
+Attack: +5
+Move: Flame Slash
+
+
+inventories
+Column		Type
+id		int
+equipment_id	int
+player_id	int
+
+Purpose:
+
+Stores equipment currently owned by the player but not equipped by a hero.
+Each inventory row represents one owned piece of equipment.
+The equipment_id references the equipment definition in the equipment table.
+The player_id identifies which player owns the equipment.
+
+
+equipment_saved_heroes
+Column		Type
+id		int
+inventory_id	int
+saved_hero_id	int
+
+Purpose:
+Stores equipment belonging to a player's saved hero.
+The equipment must first belong to the player's 
+inventory before it can be equipped by a hero.
+
+
+equipment_monsters
+Column		Type
+id		int
+gear_id		int
+monster_id	int
+drop_chance	int
+
+Purpose:
+Stores the equipment currently used by a monster or boss.
+
+For example:
+Ashen Knight
+
+has:
+Inferno Blade
+Ashen Plate
+
+
+affinities
+Column	Type
+id	int
+name	varchar
+
+Purpose:
+Stores the names of the game's affinities.
+
+Example:
+None
+Fire
+Water
+Nature
+Metal
+
+The relationships between affinities are stored in affinity_relationships.
+
+
+affinity_relationships
+Column			Type
+id			int
+affinity_id		int
+target_affinity_id	int
+multiplier		decimal
+
+Purpose:
+Defines how one affinity affects another affinity.
+affinity_id is the affinity of the move or effect.
+target_affinity_id is the affinity of the entity being affected.
+multiplier determines the damage modification.
+
+Example:
+Water → Fire = 1.50
+This means a Water-affinity move deals 150% damage to a Fire-affinity entity.
+
+Another example:
+Water → Nature = 0.75
+This means a Water-affinity move deals 75% damage to a Nature-affinity entity.
+
+
+abilities
+Column		Type
+id		int
+name		varchar
+description     varchar
+effect		json
+
+Purpose:
+Defines an ability and the rules for what the ability does.
+
+Abilities can affect:
+Stats
+Moves
+Equipment
+Affinity
+Synergies
+Combat rules
+AI
+
+The effect field stores the specific rules required by the ability.
+This allows abilities to have different effects without requiring a separate 
+database column for every possible ability effect.

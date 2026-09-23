@@ -1,0 +1,46 @@
+set PATH=%PATH%;C:\Users\syste\AppData\Roaming\Composer\vendor\bin
+
+error: Cannot create file "C:\xampp\xampp-control.ini". toegang gewigerd 
+
+exception EAccessViolation in module xampp-cintrol.exe at 0025B292. Access violation at address 0065B292 in module 'xampp-control.exe'. Read of address 00000042.
+
+composer run dev
+php artisan make:provider RiakServiceProvider
+
+3 klusbedrijf
+
+you can encrypt .env file in laravel 
+
+certain configuration files like cors.php and view.php are not published by default
+php artisan config:publish --all
+
+enable maintenance mode
+php artisan down
+
+Disabling Maintenance Mode
+php artisan up
+
+no need for a cron jon
+Schedule::call(new DeleteRecentUsers)->daily();
+
+php artisan list
+
+queueable jobs
+
+php artisan optimize
+php artisan optimize:clear
+
+php artisan route:list
+
+var_dump() and die()
+@dd 
+
+MS Shell Dlg
+
+Windows + R
+control /name Microsoft.CredentialManager
+Click Algemene referenties/Windows Credentials
+remove git:https://YOUR-USERNAME@github.com 
+
+git config --global --unset user.name
+git config --global --unset user.email
