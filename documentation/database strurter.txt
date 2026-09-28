@@ -11,9 +11,9 @@ Ref : points.map_id  ?> maps.id
 Table points {
   id integer [primary key]
   map_id integer [not null]
-  name varchar
-  x integer
-  y integer
+  name varchar [not null] 
+  x integer [not null] 
+  y integer [not null] 
 }
 
 Table shop_points {
@@ -27,7 +27,7 @@ Table shop_equipment {
   id integer [primary key]
   shop_point_id integer [not null] 
   equipment_id integer [not null] 
-  price integer
+  price integer [not null] 
 
   indexes {(shop_point_id, equipment_id) [unique]}
 }
@@ -80,8 +80,8 @@ Table transition_points {
   id integer [primary key]
   point_id integer [not null, unique]
   target_map_id integer [not null]
-  target_x integer 
-  target_y integer 
+  target_x integer [not null]
+  target_y integer [not null]
 }
 
 Ref : points.id - transition_points.point_id
@@ -132,8 +132,8 @@ Table players {
   map_id integer [not null]
   name varchar [not null] 
   gold integer [not null] 
-  x integer
-  y integer
+  x integer [not null] 
+  y integer [not null] 
 }
 
 Ref : maps.id < players.map_id

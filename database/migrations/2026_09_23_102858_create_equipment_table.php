@@ -13,9 +13,9 @@ return new class extends Migration
   {
     Schema::create('equipment', function (Blueprint $table) {
       $table->id();
-      $table->foreignId('affinity_id')->constrained('affinities');
-      $table->foreignId('ability_id')->constrained('abilities');
-      $table->foreignId('move_id')->constrained('moves');
+      $table->foreignId('affinity_id')->nullable()->constrained('affinities');
+      $table->foreignId('ability_id')->nullable()->constrained('abilities');
+      $table->foreignId('move_id')->nullable()->constrained('moves');
 
       $table->enum('equipment_type', [
         'weapon',

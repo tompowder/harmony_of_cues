@@ -15,8 +15,8 @@ return new class extends Migration
       $table->id();
       $table->foreignId('point_id')->unique()->constrained('points');
       $table->foreignId('target_map_id')->constrained('maps');
-      $table->integer('target_x')->nullable();
-      $table->integer('target_y')->nullable();
+      $table->integer('target_x');
+      $table->integer('target_y');
       $table->timestamps();
     });
   }

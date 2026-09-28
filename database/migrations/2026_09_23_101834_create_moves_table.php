@@ -21,10 +21,10 @@ return new class extends Migration
         'magic',
       ]);
 
-      $table->decimal('power')->nullable();
-      $table->json('effect')->nullable();
+      $table->decimal('power');
+      $table->json('effect');
       $table->string('description')->nullable();
-      $table->unsignedInteger('cost')->nullable();
+      $table->unsignedInteger('cost');
 
       $table->enum('target', [
         'self',

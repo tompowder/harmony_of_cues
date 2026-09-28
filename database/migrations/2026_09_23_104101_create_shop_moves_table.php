@@ -11,13 +11,17 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::create('info_encounters', function (Blueprint $table) {
+    Schema::create('shop_moves', function (Blueprint $table) {
       $table->id();
-      $table->foreignId('map_id')->constrained('maps');
-      $table->unsignedTinyInteger('encounter_chance');
+      $table->foreignId('shop_point_id')->constrained('shop_points');
+      $table->foreignId('move_id')->constrained('moves');
+      $table->unsignedInteger('price');
       $table->timestamps();
 
-      $table->check('encounter_chance BETWEEN 1 AND 100');
+      $table->unique([
+        'shop_point_id',
+        'move_id',
+      ]);
     });
   }
 
@@ -26,6 +30,6 @@ return new class extends Migration
    */
   public function down(): void
   {
-    Schema::dropIfExists('info_encounters');
+    Schema::dropIfExists('shop_moves');
   }
 };

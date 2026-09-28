@@ -14,9 +14,9 @@ return new class extends Migration
     Schema::create('points', function (Blueprint $table) {
       $table->id();
       $table->foreignId('map_id')->constrained('maps');
-      $table->string('name')->nullable();
-      $table->integer('x')->nullable();
-      $table->integer('y')->nullable();
+      $table->string('name');
+      $table->integer('x');
+      $table->integer('y');
       $table->timestamps();
     });
   }

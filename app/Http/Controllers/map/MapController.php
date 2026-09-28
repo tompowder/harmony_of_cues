@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\map;
 
+use App\Http\Controllers\Controller;
+
 class MapController extends Controller
 {
   static private $solid = ['-', '|', '<', '>', 'S', '$', '#', 'I', 'R'];
@@ -91,4 +93,6 @@ class MapController extends Controller
 
     return response()->json($data);
   }
+
+   private function activateEncounterPoint() {}
 }

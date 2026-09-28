@@ -16,8 +16,8 @@ return new class extends Migration
       $table->foreignId('map_id')->constrained('maps');
       $table->string('name');
       $table->unsignedInteger('gold');
-      $table->integer('x')->nullable();
-      $table->integer('y')->nullable();
+      $table->integer('x');
+      $table->integer('y');
       $table->timestamps();
     });
   }

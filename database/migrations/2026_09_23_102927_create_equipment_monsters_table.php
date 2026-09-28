@@ -18,7 +18,7 @@ return new class extends Migration
       $table->unsignedTinyInteger('drop_chance')->nullable();
       $table->timestamps();
 
-      $table->check('drop_chance IS NULL OR drop_chance BETWEEN 1 AND 100');
+      //$table->check('drop_chance IS NULL OR drop_chance BETWEEN 1 AND 100');
     });
   }
 
