@@ -5,28 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ config('app.name', 'Laravel') }}</title>
   </head>
-  <body class="body" id="body">
+<body class="body" id="body">
 
-    <form method="POST" action="/ideas" id="test">
+   <form method="POST" action="{{ route('logout') }}">
       @csrf
-      <input type="number" id="x" name="x" value="{{ $coordinates["x"] }}"><br>
-      <input type="number" id="y" name="y" value="{{ $coordinates["y"] }}"><br>
-      <button type="submit"> submit </button>
-    </form>
+      <button type="sumit">logout</button>
+   </form><br>
 
-    <div style="font-family:Consolas, monospace" id="map">
-      @forelse($map as $mapPart)
-      {!! $mapPart !!} <br>
-      @empty 
-        there are no map
-      @endforelse
+   <form method="POST" action="/ideas" id="test">
+   @csrf
+   <input type="number" id="x" name="x" value="{{ $coordinates["x"] }}"><br>
+   <input type="number" id="y" name="y" value="{{ $coordinates["y"] }}"><br>
+   <button type="submit"> submit </button>
+   </form>
 
-      {!! $script !!}
-    </div>
+   <div style="font-family:Consolas, monospace" id="map">
+   @forelse($map as $mapPart)
+   {!! $mapPart !!} <br>
+   @empty 
+      there are no map
+   @endforelse
+
+   {!! $script !!}
+   </div>
     
-  </body>
+</body>
 
-  <script>
+<script>
   const form = document.querySelector("#test");
   const map = document.querySelector("#map");
   const body = document.querySelector("#body");
@@ -104,6 +109,6 @@
 
   form.reset();
 
-  </script>
+</script>
 
 </html>

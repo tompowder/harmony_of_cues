@@ -6,24 +6,24 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-  /**
-   * Run the migrations.
-   */
-  public function up(): void
-  {
-    Schema::create('inventories', function (Blueprint $table) {
-      $table->id();
-      $table->foreignId('equipment_id')->constrained('equipment');
-      $table->foreignId('player_id')->constrained('players');
-      $table->timestamps();
-    });
-  }
+   /**
+    * Run the migrations.
+    */
+   public function up(): void
+   {
+      Schema::create('inventories', function (Blueprint $table) {
+         $table->id();
+         $table->foreignId('equipment_id')->constrained('equipment');
+         $table->foreignId('player_id')->constrained('players');
+         $table->timestamps();
+      });
+   }
 
-  /**
-   * Reverse the migrations.
-   */
-  public function down(): void
-  {
-    Schema::dropIfExists('inventories');
-  }
+   /**
+    * Reverse the migrations.
+    */
+   public function down(): void
+   {
+      Schema::dropIfExists('inventories');
+   }
 };

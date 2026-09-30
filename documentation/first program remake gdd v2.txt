@@ -19,35 +19,35 @@
 19. Getting Moves
 20. Attack Moves
 21. Magic Moves
-22. MP
-23. Targeting
-24. Synergy Moves
-25. Synergy Effects
-26. Synergy Stats
-27. Hero and Monster Synergies
-28. Learning Synergies
-29. Entity Stats
-30. HP
-31. MP
-32. Attack
-33. Magic
-34. Defense
-35. Abilities
-36. Affinity
-37. Gold
-38. XP
-39. Leveling
-40. Stat Points
-41. Hero Builds
-42. Move Learning by Level
-43. Monster Stats
-44. Encounter Chance
-45. Drop Chance
-46. Monster Design
-47. Bosses
-48. Boss AI
-49. Example Boss
-50. Boss Abilities
+22. Piercing Moves
+23. MP
+24. Targeting
+25. Synergy Moves
+26. Synergy Effects
+27. Synergy Stats
+28. Hero and Monster Synergies
+29. Learning Synergies
+30. Entity Stats
+31. HP
+32. MP
+33. Attack
+34. Magic
+35. Defense
+36. Abilities
+37. Affinity
+38. Gold
+39. XP
+40. Leveling
+41. Stat Points
+42. Hero Builds
+43. Move Learning by Level
+44. Monster Stats
+45. Encounter Chance
+46. Drop Chance
+47. Monster Design
+48. Bosses
+49. Boss AI
+50. Example Boss
 51. Boss Rewards
 52. inventory
 53. Possible Future Features
@@ -551,7 +551,11 @@ Defense +8
 Affinity: Fire
 
 Ability:
-Fire Guard
+Burning Resolve
+
+When the user reaches 40% HP:
+Attack + 30%
+The ability remains active for the rest of the fight.
 
 when Flame Slash is used from the Inferno Blade is used with Ashen Plate armor
 Together they create:
@@ -750,7 +754,13 @@ Affinity: Water
 
 Magic moves normally require MP.
 
-22. MP
+22. Piercing Moves
+
+piercing moves can not be used by players and monsters and ignore all defense of an entity
+piercing moves are only used by abilities and the 
+damaging done by them is not effected by magic and attack state
+
+23. MP
 
 MP is used for magic moves.
 
@@ -770,7 +780,7 @@ The move can be used.
 
 MP becomes 0.
 
-23. Targeting
+24. Targeting
 
 After selecting a move, the player chooses its target.
 
@@ -799,7 +809,7 @@ For example:
 Water Blast -> Monster 1
 Heal -> Hero 2
 
-24. Synergy Moves
+25. Synergy Moves
 
 When specific moves are selected by different entities during the same turn, they can combine into a synergy move.
 
@@ -816,7 +826,7 @@ can become:
 
 SYNERGY! Holy Water
 
-25. Synergy Effects
+26. Synergy Effects
 
 Synergies can:
 
@@ -834,7 +844,7 @@ Water Blast + Heal
         ↓
 Water damage + healing
 
-26. Synergy Stats
+27. Synergy Stats
 
 By default, a synergy uses the average stats of the entities involved.
 
@@ -862,7 +872,7 @@ For example:
 
 This synergy uses the highest Magic stat instead of the average.
 
-27. Hero and Monster Synergies
+28. Hero and Monster Synergies
 
 Synergies are not limited to heroes.
 
@@ -874,7 +884,7 @@ This could be used for special mechanics, counters, bosses, or unique encounters
 
 For example, a boss and a minion might use two moves together to activate a powerful attack.
 
-28. Learning Synergies
+29. Learning Synergies
 
 Players can discover synergies through:
 
@@ -907,7 +917,7 @@ it does not cost Gold again when the player selects the synergy information in t
 
 The player can also discover synergies through experimentation.
 
-29. Entity Stats
+30. Entity Stats
 
 Heroes and monsters are both entities.
 
@@ -931,7 +941,7 @@ xp drop
 xp
 Drop Chance
 
-30. HP
+31. HP
 
 HP means Hit Points.
 
@@ -939,7 +949,7 @@ An entity with 0 HP normally cannot perform a move.
 
 They automatically use Skip unless an ability allows something different.
 
-31. MP
+32. MP
 
 MP means Magic Points.
 
@@ -949,7 +959,7 @@ Monsters can have MP, but monster MP is not displayed in the battle UI.
 
 MP can be recoverd by levling up, Ability and at a save point
 
-32. Attack
+33. Attack
 
 Attack determines the strength of attack moves.
 
@@ -962,7 +972,7 @@ Tackle:
 
 The actual damage is then affected by Defense and other effects.
 
-33. Magic
+34. Magic
 
 Magic determines the strength of magic moves.
 
@@ -975,7 +985,7 @@ Water Blast:
 
 The actual damage is affected by Defense, affinity, abilities, and other effects.
 
-34. Defense
+35. Defense
 
 Defense reduces incoming damage.
 
@@ -1008,7 +1018,9 @@ The final damage is rounded down where required.
 
 The exact damage formula can be adjusted during balancing.
 
-35. Abilities
+Piercing moves ignore all defense
+
+36. Abilities
 
 An entity can have an ability.
 
@@ -1044,7 +1056,10 @@ Moves
 Synergies
 AI
 
-36. Affinity
+abilities can use moves like Burning Body is activated 
+it can a piercing move to do damage to the target
+
+37. Affinity
 
 Affinity determines elemental strengths and weaknesses.
 
@@ -1075,7 +1090,7 @@ Synergies:
 a synergy move like prismatic beam that changes the affinity 
 of the move to the weaknesses of the targeted entity 
 
-37. Gold drop
+38. Gold drop
 
 Gold is the currency used in shops.
 
@@ -1108,7 +1123,7 @@ Current planned party XP modifiers:
 
 These numbers are not final.
 
-39. Leveling
+40. Leveling
 
 Every hero and monster type has its own level schema.
 
@@ -1144,7 +1159,7 @@ If a calculation results in a decimal, the value is rounded up where appropriate
 For heroes, Defense does not increase automatically through leveling. 
 Defense can instead be increased through Stat Points, armor, and abilities.
 
-40. Stat Points
+41. Stat Points
 
 When a hero levels up, they receive a Stat Point.
 
@@ -1190,7 +1205,7 @@ Base Level Stat
 
 This allows two heroes of the same type and level to have different builds.
 
-41. Hero Builds
+42. Hero Builds
 
 Stat points can be used to specialize heroes.
 
@@ -1221,7 +1236,7 @@ Equipment
 Abilities
 Synergies
 
-42. Move Learning by Level
+43. Move Learning by Level
 
 The level schema also contains a list of moves learned at specific levels.
 
@@ -1255,7 +1270,7 @@ Gold: 125
 
 This allows the same monster type to appear at different strengths.
 
-44. Encounter Chance
+45. Encounter Chance
 
 Encounter Chance is only used by monsters.
 
@@ -1270,7 +1285,7 @@ Forest Wolf X2 10%
 
 The encounter table can change between maps.
 
-45. Drop Chance
+46. Drop Chance
 
 Monsters can have weapons and armor associated with them.
 
@@ -1289,7 +1304,7 @@ Drop Chance: 5%
 This gives the player a reason to fight certain monsters repeatedly.
 monsters can only drop the equipment they are using 
 
-46. Monster Design
+47. Monster Design
 
 Monsters should not only differ through their stats.
 
@@ -1317,13 +1332,13 @@ Forest Wolf
 
 Becomes stronger when another Wolf is alive.
 
-Fairy
+Golden Goblin
 
 Has powerful magic but tries to flee after several turns.
 
 This makes different encounters require different strategies.
 
-47. Bosses
+48. Bosses
 
 Bosses are represented by # on maps.
 
@@ -1341,7 +1356,7 @@ Unique equipment synergies
 Multiple AI phases
 Special reactions to player actions
 
-48. Monster AI
+49. Monster AI
 
 Bosses and som monsters can have their own AI rules.
 
@@ -1374,7 +1389,7 @@ If player heals:
 
 This makes each boss feel different.
 
-49. Example Boss — Ashen Knight
+50. Example Boss — Ashen Knight
 Level: 8
 
 HP: 180
@@ -1386,7 +1401,7 @@ Defense: 15
 
 Affinity: Fire
 
-Ability: Burning Resolve
+Ability: Fire Guard
 
 Weapon: Inferno Blade
 Armor: Ashen Plate
@@ -1412,25 +1427,11 @@ Phase 3
 Flame Slash
 Fire Burst
 Dragon Inferno
-Flame Slash
 
 The boss stops using Guard and becomes much more aggressive.
 
 Bosses can ignore the 4-move cap.
 
-50. Boss Abilities
-
-Boss abilities can change when certain conditions are met.
-
-Burning Resolve
-
-When the Ashen Knight reaches 40% HP:
-
-Attack +10
-
-The ability remains active for the rest of the fight.
-
-Boss abilities can also alter AI, moves, synergies, or other combat rules.
 
 51. Boss Rewards
 

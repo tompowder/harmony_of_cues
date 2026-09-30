@@ -6,27 +6,27 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-  /**
-   * Run the migrations.
-   */
-  public function up(): void
-  {
-    Schema::create('players', function (Blueprint $table) {
-      $table->id();
-      $table->foreignId('map_id')->constrained('maps');
-      $table->string('name');
-      $table->unsignedInteger('gold');
-      $table->integer('x');
-      $table->integer('y');
-      $table->timestamps();
-    });
-  }
+   /**
+    * Run the migrations.
+    */
+   public function up(): void
+   {
+      Schema::create('players', function (Blueprint $table) {
+         $table->id();
+         $table->foreignId('map_id')->constrained('maps');
+         $table->foreignId('user_id')->constrained('users');
+         $table->unsignedInteger('gold');
+         $table->integer('x');
+         $table->integer('y');
+         $table->timestamps();
+      });
+   }
 
-  /**
-   * Reverse the migrations.
-   */
-  public function down(): void
-  {
-    Schema::dropIfExists('players');
-  }
+   /**
+    * Reverse the migrations.
+    */
+   public function down(): void
+   {
+      Schema::dropIfExists('players');
+   }
 };

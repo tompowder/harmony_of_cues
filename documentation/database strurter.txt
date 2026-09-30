@@ -261,7 +261,7 @@ Table moves {
   id integer [primary key]
   affinity_id integer [not null] 
   name varchar [not null] 
-  type ENUM (attack, magic) [not null]
+  type ENUM (attack, magic, piercing) [not null]
   power decimal
   effect json
   description string

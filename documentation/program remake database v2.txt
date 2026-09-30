@@ -55,7 +55,7 @@ point_id	int
 Purpose:
 Defines which points are shops.
 The point_id references a point from the point table.
-The equipment, moves, and information sold by the shop are stored in shop_gear, shop_move, and shop_info.
+The equipment, moves, and information sold by the shop are stored in shop_equipment, shop_move, and shop_info.
 
 
 shop_equipment
@@ -503,6 +503,7 @@ target		enum
 type can be:
 attack
 magic
+piercing
 
 target can be:
 self
@@ -589,7 +590,7 @@ boost_defense	int
 Purpose:
 Defines weapons and armor.
 
-gear_type can be:
+equipment_type can be:
 weapon
 armor
 
@@ -636,7 +637,7 @@ inventory before it can be equipped by a hero.
 equipment_monsters
 Column		Type
 id		int
-gear_id		int
+equipment_id		int
 monster_id	int
 drop_chance	int
 

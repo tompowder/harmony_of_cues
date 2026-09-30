@@ -719,12 +719,15 @@ Negate damage
 Interact with affinities
 Participate in synergies
 
-There are two move types:
+There are three move types:
 Attack
 Magic
+Piercing
 
 Heroes and normal monsters can have a maximum of 4 moves.
 Bosses can have more than 4 moves.
+
+Piercing moves cannot be learnd by entities and are only used by abilities
 
 
 21. Attack Moves
@@ -952,11 +955,16 @@ The ability.effect field contains the rules for the ability.
 
 For example:
 
-{
-    "trigger": "death",
-    "effect": {
-        "use_move": 15
-    }
+{ 
+   "trigger": "defeated_skip", 
+   "effect": 
+   {
+      "use_move": 
+      {
+         "target": 
+         "random_enemy", "move_id": 15 
+      }
+   }
 }
 
 The exact list of triggers and effects is not finalized.
@@ -966,13 +974,13 @@ Possible triggers could include:
 Taking damage
 Dealing damage
 Reaching a certain HP
-Reaching 0 HP
 Using a move
 Starting a turn
 Ending a turn
 Another entity dying
 Using equipment
 Activating a synergy
+Skiping a turn when defeated
 
 Abilities can change how combat works.
 
@@ -1030,12 +1038,18 @@ model_monster.ai
 
 A simple monster could use:
 
-{
-    "move_used": "random"
+{ 
+   "move_selection": "random" 
 }
 
 This means the monster randomly selects from its available moves.
-More complex AI can use conditions, phases, and different move-selection behaviors.
+
+More complex AI can use:
+
+Move-selection behaviors
+Conditions
+Phases
+Reactions to combat events
 
 
 35. Boss AI
@@ -1044,39 +1058,46 @@ Bosses can have multiple phases.
 
 Each phase can define:
 
-A trigger
+A condition that determines when the phase is active
 Available moves
 How moves are selected
 
 Example:
 
-{
-    "phase_1": {
-        "trigger": {
-            "stat": "hp",
-            "amount": "100%"
-        },
-        "moves": [3, 4],
-        "moves_used": "careful"
-    },
-
-    "phase_2": {
-        "trigger": {
-            "stat": "hp",
-            "amount": "75%"
-        },
-        "moves": [3, 4, 6],
-        "moves_used": "random"
-    },
-
-    "phase_3": {
-        "trigger": {
-            "stat": "hp",
-            "amount": "40%"
-        },
-        "moves": [4, 6, 8, 9],
-        "moves_used": "reckless"
-    }
+{ "phases": [ 
+   { 
+      "name": "phase_1", 
+      "condition": 
+      { 
+         "stat": "hp_percent", 
+         "operator": ">", 
+         "value": 75 
+      }, 
+      "moves": [3, 4], 
+      "move_selection": "careful" 
+   }, 
+   { 
+      "name": "phase_2", 
+      "condition": 
+      { 
+         "stat": "hp_percent", 
+         "operator": "<=", 
+         "value": 75
+      }, 
+      "moves": [3, 4, 6], 
+      "move_selection": "random"
+   }, 
+   { 
+      "name": "phase_3", 
+      "condition": 
+      { 
+         "stat": "hp_percent", 
+         "operator": "<=", 
+         "value": 40 
+      }, 
+      "moves": [4, 6, 8, 9], 
+      "move_selection": "reckless" 
+   }] 
 }
 
 The exact AI JSON structure is not final.
@@ -1093,6 +1114,30 @@ Reckless
 The monster is more likely to use attacking moves.
 
 Additional behaviors can be added later.
+
+AI Reactions
+Bosses can eventually react to actions performed during combat.
+
+For example:
+
+If the player uses a Fire move, the boss may use a Fire counter.
+If the player repeatedly uses Magic moves, the boss may activate a Magic defense.
+If the player heals, the boss may prioritize attacking the healer.
+
+These reactions are separate from normal phase behavior.
+
+A boss can therefore have both:
+
+Phase behavior
+
+HP > 75%       -> Careful
+HP 40–75%      -> Random
+HP <= 40%      -> Reckless
+
+and combat reactions
+
+Player uses Fire -> Fire Counter
+Player heals     -> Target healer
 
 
 36. Turn Order

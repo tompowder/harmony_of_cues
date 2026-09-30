@@ -20,7 +20,7 @@ php artisan down
 Disabling Maintenance Mode
 php artisan up
 
-no need for a cron jon
+no need for a cron job
 Schedule::call(new DeleteRecentUsers)->daily();
 
 php artisan list

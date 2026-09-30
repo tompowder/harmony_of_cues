@@ -6,29 +6,29 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-  /**
-   * Run the migrations.
-   */
-  public function up(): void
-  {
-    Schema::create('player_defeated_monsters', function (Blueprint $table) {
-      $table->id();
-      $table->foreignId('player_id')->constrained('players');
-      $table->foreignId('model_monster_id')->constrained('model_monsters');
-      $table->timestamps();
+   /**
+    * Run the migrations.
+    */
+   public function up(): void
+   {
+      Schema::create('player_defeated_monsters', function (Blueprint $table) {
+         $table->id();
+         $table->foreignId('player_id')->constrained('players');
+         $table->foreignId('model_monster_id')->constrained('model_monsters');
+         $table->timestamps();
 
-      $table->unique([
-        'player_id',
-        'model_monster_id',
-      ]);
-    });
-  }
+         $table->unique([
+            'player_id',
+            'model_monster_id',
+         ]);
+      });
+   }
 
-  /**
-   * Reverse the migrations.
-   */
-  public function down(): void
-  {
-    Schema::dropIfExists('player_defeated_monsters');
-  }
+   /**
+    * Reverse the migrations.
+    */
+   public function down(): void
+   {
+      Schema::dropIfExists('player_defeated_monsters');
+   }
 };
