@@ -26,60 +26,6 @@ class DatabaseSeeder extends Seeder
          'password' => 'test'
       ]);
 
-      DB::table('maps')->insert([
-         'id' => $mapID,
-         'name' => 'test',
-         'map_data' => '----------------------\n|S . $|\n| --------- |\n| --| . | |\n| |># | . |\n| --| . |.. . .|\n| ---- | . |\n|. . . | |\n|I| . R | |\n-----------------<----'
-      ]);
-
-      // new map design wear x is /2 so the player feel like there moving the same distance in the x and y direction.
-      // and the player moves x 2 places and for y move 1 place
-      //[
-      //   "- - - - - - - - - - - -\n",
-      //   "| S       .          $|\n",
-      //   "|     - - - - -       |\n",
-      //   "|   - |   .   |       |\n",
-      //   "|   | > #     |     . |\n",
-      //   "|   - |  .    | .     |\n",
-      //   "|     - - - . |   .   |\n",
-      //   "| .     .   . |       |\n",
-      //   "| I |   .   R |       |\n",
-      //   "- - - - - - - - - - - -\n"
-      //];
-
-      //[
-      //   "- - < - - - - - - - - - - - - - -\n",
-      //   "|       |               .       |\n",
-      //   "|       |   #           .       |\n",
-      //   "|       |               .       |\n",
-      //   "| . . . | - - - - - - - - . . . |\n",
-      //   "|       | - - - - - - - -       |\n",
-      //   "|       .       .       .       |\n",
-      //   "$       .       .       .       |\n",
-      //   "- - S - - - - - - - - - - - - - -\n"
-      //];
-
-      //[
-      //   "- - - - - - - - - - - - - - - S -\n",
-      //   "|           .       .           |\n",
-      //   "|           .       .           |\n",
-      //   "|         - - - - - - - R . . . |\n",
-      //   "I       | | - - | | | | |       |\n",
-      //   "|       $ | - - - - - - -       |\n",
-      //   "|       | | - -         .       |\n",
-      //   "|       | | >           .       |\n",
-      //   "- - < - - - - - - - - - - - - - -\n"
-      //];
-
-      DB::table('players')->insert([
-         'id' => 1,
-         'map_id' => $mapID,
-         'user_id' => $userID,
-         'gold' => 20,
-         'x' => 17,
-         'y' => 8,
-      ]);
-
       DB::table('affinities')->insert([
          ['id' => 1, 'name' => 'Fire'],
          ['id' => 2, 'name' => 'Water'],
@@ -756,100 +702,259 @@ class DatabaseSeeder extends Seeder
             'level_requirement' => 1
          ],
          [
-            'id' => 20,
+            'id' => 21,
             'level_schema_id' => 6, // metal slime
             'move_id' => 9, // guard
             'level_requirement' => 1
          ],
          [
-            'id' => 20,
+            'id' => 22,
             'level_schema_id' => 6, // metal slime
             'move_id' => 10, // magic guard
             'level_requirement' => 1
          ],
          [
-            'id' => 21,
-            'level_schema_id' => 7, // fire slime
-            'move_id' => 15, // Tackle
-            'level_requirement' => 1
-         ],
-         [
-            'id' => 22,
-            'level_schema_id' => 7, // fire slime
-            'move_id' => 25, // fire bash
-            'level_requirement' => 1
-         ],
-         [
             'id' => 23,
-            'level_schema_id' => 8, // forest wolf
+            'level_schema_id' => 7, // fire slime
             'move_id' => 15, // Tackle
             'level_requirement' => 1
          ],
          [
             'id' => 24,
+            'level_schema_id' => 7, // fire slime
+            'move_id' => 25, // fire bash
+            'level_requirement' => 1
+         ],
+         [
+            'id' => 25,
+            'level_schema_id' => 8, // forest wolf
+            'move_id' => 15, // Tackle
+            'level_requirement' => 1
+         ],
+         [
+            'id' => 26,
             'level_schema_id' => 8, // forest wolf
             'move_id' => 24, // nature scratch
             'level_requirement' => 1   
          ],
          [
-            'id' => 25,
+            'id' => 27,
             'level_schema_id' => 8, // forest wolf
             'move_id' => 23, // bite
             'level_requirement' => 1   
          ],
          [
-            'id' => 26,
+            'id' => 28,
             'level_schema_id' => 9, // water djinn
             'move_id' => 1, // water blast
             'level_requirement' => 1   
          ],
          [
-            'id' => 27,
+            'id' => 29,
             'level_schema_id' => 9, // water djinn
             'move_id' => 17, // water whip
             'level_requirement' => 1   
          ],
          [
-            'id' => 28,
+            'id' => 30,
             'level_schema_id' => 9, // water djinn
             'move_id' => 7, // heal
             'level_requirement' => 1   
          ],
          [
-            'id' => 29,
+            'id' => 31,
             'level_schema_id' => 9, // water djinn
             'move_id' => 2, // nature's wrath
             'level_requirement' => 1   
          ],
          [
-            'id' => 30,
+            'id' => 32,
             'level_schema_id' => 10, // infernal knight
             'move_id' => 4, // flame point
             'level_requirement' => 1   
          ],
          [
-            'id' => 31,
+            'id' => 33,
             'level_schema_id' => 10, // infernal knight
             'move_id' => 16, // blazing kick
             'level_requirement' => 1   
          ],
          [
-            'id' => 32,
+            'id' => 34,
             'level_schema_id' => 10, // infernal knight
             'move_id' => 27, // pommel strike
             'level_requirement' => 1
          ],
          [
-            'id' => 33,
+            'id' => 35,
             'level_schema_id' => 10, // infernal knight
             'move_id' => 9, // guard
             'level_requirement' => 1
          ],
          [
-            'id' => 34,
+            'id' => 36,
             'level_schema_id' => 10, // infernal knight
             'move_id' => 5, // fire burst
             'level_requirement' => 1
+         ]
+      ]);
+
+      DB::table('equipment')->insert([
+         [
+            'id' => 1,
+            'affinity_id' => null, 
+            'ability_id' => null,
+            'move_id' => 13, // slashing
+            'type' => 'weapon',
+            'name' => 'Iron Sword',
+            'boost_hp' => 0,
+            'boost_mp' => 0,
+            'attack_bonus' => 50,
+            'magic_bonus' => 0,
+            'defense_bonus' => 0,
+         ],
+         [
+            'id' => 2,
+            'affinity_id' => null, 
+            'ability_id' => null,
+            'move_id' => 14, // flame slash
+            'type' => 'weapon',
+            'name' => 'Flame Sword',
+            'boost_hp' => 0,
+            'boost_mp' => 0,
+            'attack_bonus' => 75,
+            'magic_bonus' => 0,
+            'defense_bonus' => 0,
+         ],
+         [
+            'id' => 3,
+            'affinity_id' => null, 
+            'ability_id' => null,
+            'move_id' => 1, // water blast
+            'type' => 'weapon',
+            'name' => 'Water Staff',
+            'boost_hp' => 0,
+            'boost_mp' => 20,
+            'attack_bonus' => 0,
+            'magic_bonus' => 75,
+            'defense_bonus' => 0,
+         ],
+         [
+            'id' => 4,
+            'affinity_id' => null, 
+            'ability_id' => null,
+            'move_id' => null, 
+            'type' => 'weapon',
+            'name' => 'Arcane Staff',
+            'boost_hp' => 0,
+            'boost_mp' => 20,
+            'attack_bonus' => 0,
+            'magic_bonus' => 50,
+            'defense_bonus' => 0,
+         ],
+         [
+            'id' => 5,
+            'affinity_id' => null, 
+            'ability_id' => null,
+            'move_id' => 2, // nature's wrath
+            'type' => 'weapon',
+            'name' => 'Nature Staff',
+            'boost_hp' => 0,
+            'boost_mp' => 20,
+            'attack_bonus' => 0,
+            'magic_bonus' => 50,
+            'defense_bonus' => 0,
+         ],
+         [
+            'id' => 6,
+            'affinity_id' => 5, // metal
+            'ability_id' => null,
+            'move_id' => null,
+            'type' => 'armor',
+            'name' => 'Steel Armor',
+            'boost_hp' => 0,
+            'boost_mp' => 0,
+            'attack_bonus' => 0,
+            'magic_bonus' => 0,
+            'defense_bonus' => 75,
+         ],
+         [
+            'id' => 7,
+            'affinity_id' => 1, // fire
+            'ability_id' => 6, // fire guard
+            'move_id' => null,
+            'type' => 'armor',
+            'name' => 'Fire Charm Armor',
+            'boost_hp' => 0,
+            'boost_mp' => 0,
+            'attack_bonus' => 15,
+            'magic_bonus' => 10,
+            'defense_bonus' => 60,
+         ],
+         [
+            'id' => 8,
+            'affinity_id' => 4, // none
+            'ability_id' => null,
+            'move_id' => null,
+            'type' => 'armor',
+            'name' => 'Leather Armor',
+            'boost_hp' => 20,
+            'boost_mp' => 0,
+            'attack_bonus' => 15,
+            'magic_bonus' => 0,
+            'defense_bonus' => 25,
+         ],
+         [
+            'id' => 9,
+            'affinity_id' => 4, // none
+            'ability_id' => null,
+            'move_id' => null,
+            'type' => 'armor',
+            'name' => 'Robe',
+            'boost_hp' => 10,
+            'boost_mp' => 20,
+            'attack_bonus' => 0,
+            'magic_bonus' => 30,
+            'defense_bonus' => 20,
+         ],
+         [
+            'id' => 10,
+            'affinity_id' => 2, // water
+            'ability_id' => null,
+            'move_id' => null,
+            'type' => 'armor',
+            'name' => 'Water Robe',
+            'boost_hp' => 30,
+            'boost_mp' => 20,
+            'attack_bonus' => 20,
+            'magic_bonus' => 25,
+            'defense_bonus' => 25,
+         ],
+         [
+            'id' => 11,
+            'affinity_id' => 1, // fire
+            'ability_id' => null,
+            'move_id' => null,
+            'type' => 'armor',
+            'name' => 'Fire Robe',
+            'boost_hp' => 20,
+            'boost_mp' => 20,
+            'attack_bonus' => 0,
+            'magic_bonus' => 20,
+            'defense_bonus' => 35,
+         ],
+         [
+            'id' => 12,
+            'affinity_id' => 1, // fire
+            'ability_id' => 7, // burning resolve
+            'move_id' => null,
+            'type' => 'armor',
+            'name' => 'Ashen Plate',
+            'boost_hp' => 20,
+            'boost_mp' => 20,
+            'attack_bonus' => 0,
+            'magic_bonus' => 20,
+            'defense_bonus' => 40,
          ]
       ]);
 
@@ -963,126 +1068,6 @@ class DatabaseSeeder extends Seeder
          }] 
       }';
 
-      DB::table('equipment')->insert([
-         [
-            'id' => 1,
-            'affinity_id' => null, 
-            'ability_id' => null,
-            'move_id' => 13, // slashing
-            'type' => 'weapon',
-            'name' => 'Iron Sword',
-            'boost_hp' => 0,
-            'boost_mp' => 0,
-            'attack_bonus' => 50,
-            'magic_bonus' => 0,
-            'defense_bonus' => 0,
-         ],
-         [
-            'id' => 2,
-            'affinity_id' => null, 
-            'ability_id' => null,
-            'move_id' => 14, // flame slash
-            'type' => 'weapon',
-            'name' => 'Flame Sword',
-            'boost_hp' => 0,
-            'boost_mp' => 0,
-            'attack_bonus' => 75,
-            'magic_bonus' => 0,
-            'defense_bonus' => 0,
-         ],
-         [
-            'id' => 3,
-            'affinity_id' => null, 
-            'ability_id' => null,
-            'move_id' => 15, // water blast
-            'type' => 'weapon',
-            'name' => 'Water Staff',
-            'boost_hp' => 0,
-            'boost_mp' => 15,
-            'attack_bonus' => 0,
-            'magic_bonus' => 75,
-            'defense_bonus' => 0,
-         ],
-         [
-            'id' => 4,
-            'affinity_id' => 5, // metal
-            'ability_id' => null,
-            'move_id' => null,
-            'type' => 'armor',
-            'name' => 'Steel Armor',
-            'boost_hp' => 0,
-            'boost_mp' => 0,
-            'attack_bonus' => 0,
-            'magic_bonus' => 0,
-            'defense_bonus' => 75,
-         ],
-         [
-            'id' => 5,
-            'affinity_id' => 1, // fire
-            'ability_id' => 6, // fire guard
-            'move_id' => null,
-            'type' => 'armor',
-            'name' => 'Fire Charm Armor',
-            'boost_hp' => 0,
-            'boost_mp' => 0,
-            'attack_bonus' => 15,
-            'magic_bonus' => 10,
-            'defense_bonus' => 60,
-         ],
-         [
-            'id' => 6,
-            'affinity_id' => 4, // none
-            'ability_id' => null,
-            'move_id' => null,
-            'type' => 'armor',
-            'name' => 'Leather Armor',
-            'boost_hp' => 20,
-            'boost_mp' => 0,
-            'attack_bonus' => 15,
-            'magic_bonus' => 0,
-            'defense_bonus' => 25,
-         ],
-         [
-            'id' => 7,
-            'affinity_id' => 4, // none
-            'ability_id' => null,
-            'move_id' => null,
-            'type' => 'armor',
-            'name' => 'Robe',
-            'boost_hp' => 10,
-            'boost_mp' => 20,
-            'attack_bonus' => 0,
-            'magic_bonus' => 30,
-            'defense_bonus' => 20,
-         ],
-         [
-            'id' => 8,
-            'affinity_id' => 2, // water
-            'ability_id' => null,
-            'move_id' => null,
-            'type' => 'armor',
-            'name' => 'Water Robe',
-            'boost_hp' => 30,
-            'boost_mp' => 0,
-            'attack_bonus' => 20,
-            'magic_bonus' => 0,
-            'defense_bonus' => 50,
-         ],
-         [
-            'id' => 9,
-            'affinity_id' => 1, // fire
-            'ability_id' => null,
-            'move_id' => null,
-            'type' => 'armor',
-            'name' => 'Fire Robe',
-            'boost_hp' => 20,
-            'boost_mp' => 20,
-            'attack_bonus' => 0,
-            'magic_bonus' => 20,
-            'defense_bonus' => 40,
-         ]
-      ]);
-
       DB::table('model_monsters')->insert([
          [
             'id' => 1,
@@ -1114,7 +1099,7 @@ class DatabaseSeeder extends Seeder
             'gold_drop' => 10,
             'xp_drop' => 750,
             'boss' => false,
-            'ai' => '{"move_selection": "random" }'
+            'ai' => '{"move_selection": "careful" }'
          ],
          [
             'id' => 5,
@@ -1150,7 +1135,138 @@ class DatabaseSeeder extends Seeder
          ]
       ]);
 
+      DB::table('equipment_monsters')->insert([
+         [
+            'id' => 1,
+            'model_monster_id' => 1, // goblin
+            'equipment_id' => 8, // leather armor
+            'drop_chance' => 10
+         ],
+         [
+            'id' => 2,
+            'model_monster_id' => 2, // golden goblin
+            'equipment_id' => 7, // fire charm armor
+            'drop_chance' => 45
+         ],
+         [
+            'id' => 3,
+            'model_monster_id' => 4, // metal slime
+            'equipment_id' => 6, // steel armor
+            'drop_chance' => 25
+         ],
+         [
+            'id' => 4,
+            'model_monster_id' => 7, // water djinn
+            'equipment_id' => 10, // water robe
+            'drop_chance' => 35
+         ],
+         [
+            'id'  => 5,
+            'model_monster_id' => 7, // water djinn
+            'equipment_id' => 3, // water staff
+            'drop_chance' => 15 
+         ],
+         [
+            'id' => 6,
+            'model_monster_id' => 8, // infernal knight
+            'equipment_id' => 12, // ashen plate
+            'drop_chance' => 100
+         ],
+         [
+            'id' => 7,
+            'model_monster_id' => 8, // infernal knight
+            'equipment_id' => 14, // flame sword
+            'drop_chance' => 100
+         ]
+      ]);
       
-      
+      DB::table('hero_stat_points')->insert([
+         [ // attack hero
+            'id' => 1, 
+            'stat_points_hp' => 0,
+            'stat_points_mp' => 0,
+            'stat_points_attack' => 5,
+            'stat_points_magic' => 0,
+            'stat_points_defense' => 2
+         ],
+         [ // magic hero
+            'id' => 2, 
+            'stat_points_hp' => 0,
+            'stat_points_mp' => 0,
+            'stat_points_attack' => 0,
+            'stat_points_magic' => 5,
+            'stat_points_defense' => 2
+         ]
+      ]);
+
+
+      DB::table('model_heroes')->insert([
+         [
+            'id' => 1,
+            'entity_id' => 1, // jonathan the warrior
+            'hero_stat_point_id' => 1, // attack hero
+            'level' => 1,
+         ],
+         [
+            'id' => 2,
+            'entity_id' => 2, // rosa the mage
+            'hero_stat_point_id' => 2, // magic hero
+            'level' => 1,
+         ]
+      ]);
+
+      DB::table('maps')->insert([
+         'id' => $mapID,
+         'name' => 'test',
+         'map_data' => '----------------------\n|S . $|\n| --------- |\n| --| . | |\n| |># | . |\n| --| . |.. . .|\n| ---- | . |\n|. . . | |\n|I| . R | |\n-----------------<----'
+      ]);
+
+      // new map design wear x is /2 so the player feel like there moving the same distance in the x and y direction.
+      // and the player moves x 2 places and for y move 1 place
+      //[
+      //   "- - - - - - - - - - - -\n",
+      //   "| S       .          $|\n",
+      //   "|     - - - - -       |\n",
+      //   "|   - |   .   |       |\n",
+      //   "|   | > #     |     . |\n",
+      //   "|   - |  .    | .     |\n",
+      //   "|     - - - . |   .   |\n",
+      //   "| .     .   . |       |\n",
+      //   "| I |   .   R |       |\n",
+      //   "- - - - - - - - - - - -\n"
+      //];
+
+      //[
+      //   "- - < - - - - - - - - - - - - - -\n",
+      //   "|       |               .       |\n",
+      //   "|       |   #           .       |\n",
+      //   "|       |               .       |\n",
+      //   "| . . . | - - - - - - - - . . . |\n",
+      //   "|       | - - - - - - - -       |\n",
+      //   "|       .       .       .       |\n",
+      //   "$       .       .       .       |\n",
+      //   "- - S - - - - - - - - - - - - - -\n"
+      //];
+
+      //[
+      //   "- - - - - - - - - - - - - - - S -\n",
+      //   "|           .       .           |\n",
+      //   "|           .       .           |\n",
+      //   "|         - - - - - - - R . . . |\n",
+      //   "I       | | - - | | | | |       |\n",
+      //   "|       $ | - - - - - - -       |\n",
+      //   "|       | | - -         .       |\n",
+      //   "|       | | >           .       |\n",
+      //   "- - < - - - - - - - - - - - - - -\n"
+      //];
+
+      DB::table('players')->insert([
+         'id' => 1,
+         'map_id' => $mapID,
+         'user_id' => $userID,
+         'gold' => 20,
+         'x' => 17,
+         'y' => 8,
+      ]);
    }
 }
