@@ -170,7 +170,7 @@ Map 3
 Ashen Shrine
         ↓
 Boss
-Ashen Knight
+Infernal Knight
 
 Each map can introduce stronger monsters, new mechanics, different encounter chances, and new information.
 
@@ -1389,7 +1389,7 @@ If player heals:
 
 This makes each boss feel different.
 
-50. Example Boss — Ashen Knight
+50. Example Boss — Infernal Knight
 Level: 8
 
 HP: 180
