@@ -17,7 +17,7 @@ return new class extends Migration
          $table->foreignId('ability_id')->nullable()->constrained('abilities');
          $table->foreignId('move_id')->nullable()->constrained('moves');
 
-         $table->enum('equipment_type', [
+         $table->enum('type', [
             'weapon',
             'armor',
          ]);

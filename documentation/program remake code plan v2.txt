@@ -1329,29 +1329,9 @@ this is the same hero selection menu used in 7.1
 43. Backend and Frontend Communication
 
 The game needs a way for the frontend to communicate player actions to the backend.
-Two possible approaches are currently being considered.
+this is the approaches is currently being used.
 
-Option 1 — Page Refresh
-
-PHP processes each action and refreshes the page after every step.
-
-Example:
-
-Player presses Arrow Right
-        ↓
-Request sent to PHP
-        ↓
-PHP processes movement
-        ↓
-Database updated
-        ↓
-Page refreshes
-        ↓
-New map rendered
-
-This is simple to implement but may make the game feel less responsive.
-
-Option 2 — JavaScript Requests
+JavaScript Requests
 
 JavaScript sends requests to the Laravel backend without refreshing the entire page.
 
@@ -1368,6 +1348,3 @@ Database updated
 Response sent to JavaScript
         ↓
 Screen updated
-
-This would allow the game to feel more like a traditional application while still using Laravel as the backend.
-The final approach has not been decided yet.

@@ -13,7 +13,7 @@ return new class extends Migration
    {
       Schema::create('encounters', function (Blueprint $table) {
          $table->id();
-         $table->foreignId('map_id')->constrained('maps');
+         $table->foreignId('map_id')->nullable()->constrained('maps');
          $table->unsignedTinyInteger('encounter_chance');
          $table->timestamps();
 

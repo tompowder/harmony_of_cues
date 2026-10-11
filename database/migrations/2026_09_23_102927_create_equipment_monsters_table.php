@@ -14,7 +14,7 @@ return new class extends Migration
       Schema::create('equipment_monsters', function (Blueprint $table) {
          $table->id();
          $table->foreignId('equipment_id')->constrained('equipment');
-         $table->foreignId('entity_id')->constrained('entities');
+         $table->foreignId('model_monster_id')->constrained('model_monsters');
          $table->unsignedTinyInteger('drop_chance')->nullable();
          $table->timestamps();
 

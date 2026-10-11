@@ -16,7 +16,7 @@ class MapController extends Controller
 
    public function getMapGameState()
    {
-      $map = DB::table('maps')->where('id', '=', '1')->get();
+      $map = DB::table('maps')->where('id', '=', '3')->get();
 
       $mapData = explode("\n", $map[0]->map_data);
 
