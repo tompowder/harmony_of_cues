@@ -430,13 +430,13 @@ After purchasing information about Burning Grove:
 | Burning Grove                 |
 |                               |
 | Description                   | 
-| Half of the monsters found    | 
-| here have Fire affinity.      | 
+| fire monsters are common in   | 
+| this Forest                   | 
 | Water affinity is recommended | 
-| in Burning Grove.             |
+| in the Burning Grove.         |
 |                               |
 | monster fond                  |
-| fire goblin                   |
+| goblin                        |
 | fire slime                    |
 | Forest Wolf                   |
 | golden goblin                 | 

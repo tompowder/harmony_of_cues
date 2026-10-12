@@ -87,7 +87,7 @@ class MoveSeeder extends Seeder
                 'name' => 'Heal',
                 'type' => 'magic',
                 'power' => 5,
-                'effect' => '{"effect": "healing"}',
+               'effect' => json_encode(['effect' => 'healing']),
                 'description' => 'Restores HP to an ally.',
                 'cost' => 15,
                 'target' => 'self_or_ally'
@@ -98,7 +98,7 @@ class MoveSeeder extends Seeder
                 'name' => 'Mass Heal',
                 'type' => 'magic',
                 'power' => 4,
-                'effect' => '{"effect": "healing"}',
+               'effect' => json_encode(['effect' => 'healing']),
                 'description' => 'Restores HP to all allies.',
                 'cost' => 30,
                 'target' => 'allies'
@@ -109,7 +109,7 @@ class MoveSeeder extends Seeder
                 'name' => 'Guard',
                 'type' => 'attack',
                 'power' => 0.75,
-                'effect' => '{"effect": "damage_reduction", "duration": "5 turns" }',
+               'effect' => json_encode(['effect' => 'damage_reduction', 'duration' => '5 turns']),
                 'description' => 'Reduces damage taken from attack moves.',
                 'cost' => 2,
                 'target' => 'self'
@@ -120,7 +120,7 @@ class MoveSeeder extends Seeder
                 'name' => 'Magic Guard',
                 'type' => 'magic',
                 'power' => 0.75,
-                'effect' => '{"effect": "damage_reduction", "duration": "5 turns" }',
+               'effect' => json_encode(['effect' => 'damage_reduction', 'duration' => '5 turns']),
                 'description' => 'Reduces damage taken from magic moves.',
                 'cost' => 5,
                 'target' => 'self'
@@ -230,7 +230,7 @@ class MoveSeeder extends Seeder
                 'name' => 'Draco Inferno',
                 'type' => 'attack',
                 'power' => 5,
-                'effect' => '{"extra_effect": {"defense_multiplier": 0.75, "target": "enemy"}, "duration": "1 turns"}',
+               'effect' => json_encode(['extra_effect' => ['defense_multiplier' => 0.75, 'target' => 'enemy'], 'duration' => '2 turns']),
                 'description' => 'Deals powerful physical Fire damage and temporarily reduces the target\'s effective Defense.',
                 'cost' => 15,
                 'target' => 'enemy'
@@ -241,7 +241,7 @@ class MoveSeeder extends Seeder
                 'name' => 'Holy Water',
                 'type' => 'magic',
                 'power' => 4,
-                'effect' => '{"use_move": {"target": "allies", "move_id": 5 }}',
+               'effect' => json_encode(['use_move' => ['target' => 'allies', 'move_id' => 5]]),
                 'description' => 'Deals magic Water damage and restores HP to all allies.',
                 'cost' => 0,
                 'target' => 'enemies'
@@ -260,7 +260,7 @@ class MoveSeeder extends Seeder
             [ // monster move
                 'id' => 23,
                 'affinity_id' => 4, // none
-                'name' => 'bite',
+               'name' => 'Bite',
                 'type' => 'attack',
                 'power' => 2,
                 'effect' => null,
@@ -271,7 +271,7 @@ class MoveSeeder extends Seeder
             [ // monster move
                 'id' => 24,
                 'affinity_id' => 3, // nature
-                'name' => 'nature scratch',
+               'name' => 'Nature Scratch',
                 'type' => 'attack',
                 'power' => 2,
                 'effect' => null,
@@ -282,9 +282,9 @@ class MoveSeeder extends Seeder
             [ // monster move
                 'id' => 25,
                 'affinity_id' => 1, // fire
-                'name' => 'fire bash',
+               'name' => 'Flare Bash',
                 'type' => 'attack',
-                'power' => 3,
+               'power' => 3.2,
                 'effect' => null,
                 'description' => 'Deals Fire damage to one enemy.',
                 'cost' => 7,
@@ -293,7 +293,7 @@ class MoveSeeder extends Seeder
             [ // monster move
                 'id' => 26,
                 'affinity_id' => 5, // metal 
-                'name' => 'metal claw',
+               'name' => 'Iron Claw',
                 'type' => 'attack',
                 'power' => 3,
                 'effect' => null,
@@ -306,10 +306,10 @@ class MoveSeeder extends Seeder
                 'affinity_id' => 4, // none
                 'name' => 'Pommel Strike',
                 'type' => 'attack',
-                'power' => 2.7,
-                'effect' => null,
-                'description' => 'Deals physical damage to one enemy.',
-                'cost' => 5,
+               'power' => 1.5,
+               'effect' => json_encode(['extra_effect' => ['attack_multiplier' => 0.85, 'target' => 'enemy'], 'duration' => '2 turns']),
+               'description' => 'Deals physical damage to one enemy and temporarily reduces the target\'s effective Attack.',
+               'cost' => 2,
                 'target' => 'enemy'
             ]
         ]);

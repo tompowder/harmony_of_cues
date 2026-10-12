@@ -459,7 +459,7 @@ Level 10 → Water Blast
 Level 20 → Heal
 
 
-move_entities
+move_heroes
 Column		Type
 id		int
 move_id		int
@@ -473,7 +473,7 @@ shop
 weapon
 
 Purpose:
-Stores the moves an entity currently has.
+Stores the moves an saved hero currently has.
 slot determines which move slot contains the move.
 source records where the move came from.
 

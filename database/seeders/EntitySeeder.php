@@ -84,45 +84,48 @@ class EntitySeeder extends Seeder
                 'affinity_id' => 1, // fire
                 'ability_id' => 6, // fire guard
                 'name' => 'infernal knight',
+            ],
+            [
+                 'id' => 11,
+                 'level_schema_id' => 11, // dummy
+                 'affinity_id' => 4, // none
+                 'ability_id' => null, 
+                 'name' => 'dummy',
             ]
         ]);
 
-        $boss_ai = '
-        { "phases": [ 
-            { 
-                "name": "phase_1", 
-                "condition": 
-                { 
-                "stat": "hp_percent", 
-                "operator": ">", 
-                "value": 75 
-                }, 
-                "moves": [], 
-                "move_selection": "careful" 
-            }, 
-            { 
-                "name": "phase_2", 
-                "condition": 
-                { 
-                "stat": "hp_percent", 
-                "operator": "<=", 
-                "value": 75
-                }, 
-                "moves": [], 
-                "move_selection": "random"
-            }, 
-            { 
-                "name": "phase_3", 
-                "condition": 
-                { 
-                "stat": "hp_percent", 
-                "operator": "<=", 
-                "value": 40 
-                }, 
-                "moves": [], 
-                "move_selection": "reckless" 
-            }] 
-        }';
+        $boss_ai = json_encode([
+         'phases' => [
+            'name' => 'phase_1',
+            'condition' => [
+               'stat' => 'hp_percent',
+               'operator' => '>',
+               'value' => 75
+            ],
+            'moves' => [9, 10, 4, 16, 27], // Guard, Magic Guard, Flame Point, Blazing Kick, Pommel Strike
+            'move_selection' => 'careful'
+         ],
+         [
+            'name' => 'phase_2',
+            'condition' => [
+               'stat' => 'hp_percent',
+               'operator' => '<=',
+               'value' => 75
+            ],
+            'moves' => [4, 16, 5, 14, 27], // Flame Point, Blazing Kick, Fire Burst, Flame Slash, Pommel Strike
+            'move_selection' => 'random'
+         ],
+         [
+            'name' => 'phase_3',
+            'condition' => [
+               'stat' => 'hp_percent',
+               'operator' => '<=',
+               'value' => 40
+            ],
+            'moves' => [16, 5, 14, 25], // Blazing Kick, Fire Burst, Flame Slash => Draco Inferno, Flare Bash
+            'move_selection' => 'reckless'
+         ]
+        ]);
 
         DB::table('model_monsters')->insert(
         [
@@ -132,7 +135,7 @@ class EntitySeeder extends Seeder
                 'gold_drop' => 5,
                 'xp_drop' => 100,
                 'boss' => false,
-                'ai' => '{"move_selection": "random" }'
+                'ai' => json_encode(['move_selection' => 'random'])
             ],
             [
                 'id' => 2,
@@ -140,7 +143,7 @@ class EntitySeeder extends Seeder
                 'gold_drop' => 20,
                 'xp_drop' => 500,
                 'boss' => false,
-                'ai' => '{"move_selection": "random" }'
+                'ai' => json_encode(['move_selection' => 'random'])
             ],
             [
                 'id' => 3,
@@ -148,7 +151,7 @@ class EntitySeeder extends Seeder
                 'gold_drop' => 3,
                 'xp_drop' => 50,
                 'boss' => false,
-                'ai' => '{"move_selection": "random" }'
+                'ai' => json_encode(['move_selection' => 'random'])
             ],
             [
                 'id' => 4,
@@ -156,7 +159,7 @@ class EntitySeeder extends Seeder
                 'gold_drop' => 10,
                 'xp_drop' => 750,
                 'boss' => false,
-                'ai' => '{"move_selection": "careful" }'
+                'ai' => json_encode(['move_selection' => 'careful'])
             ],
             [
                 'id' => 5,
@@ -164,7 +167,7 @@ class EntitySeeder extends Seeder
                 'gold_drop' => 8,
                 'xp_drop' => 200,
                 'boss' => false,
-                'ai' => '{"move_selection": "random" }'
+                'ai' => json_encode(['move_selection' => 'random'])
             ],
             [
                 'id' => 6,
@@ -172,7 +175,7 @@ class EntitySeeder extends Seeder
                 'gold_drop' => 12,
                 'xp_drop' => 300,
                 'boss' => false,
-                'ai' => '{"move_selection": "random" }'
+                'ai' => json_encode(['move_selection' => 'random'])
             ],
             [
                 'id' => 7,
@@ -180,7 +183,7 @@ class EntitySeeder extends Seeder
                 'gold_drop' => 15,
                 'xp_drop' => 400,
                 'boss' => false,
-                'ai' => '{"move_selection": "random" }'
+                'ai' => json_encode(['move_selection' => 'random'])
             ],
             [
                 'id' => 8,
