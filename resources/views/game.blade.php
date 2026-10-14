@@ -15,9 +15,9 @@
    <input type="number" id="x" value="{{ $coordinates["x"] }}"><br>
    <input type="number" id="y" value="{{ $coordinates["y"] }}"><br>
 
-   <div style="font-family:Consolas, monospace" id="map">
-   @forelse($map as $mapPart)
-   {!! $mapPart !!} <br>
+   <div style="font-family:Consolas, monospace" id="display">
+   @forelse($display as $displayPart)
+   {!! $displayPart !!} <br>
    @empty 
       there are no map
    @endforelse
@@ -28,7 +28,7 @@
 </body>
 
 <script>
-  const map = document.querySelector("#map");
+  const display = document.querySelector("#display");
   const body = document.querySelector("#body");
 
   const elementX = document.querySelector("#x");
@@ -56,22 +56,25 @@
         },
         body: JSON.stringify(
         {
-            ...(direction ? { direction } : {})
+            direction
         })
       });
       let update = await response.json();
 
-      console.log(update);
-      
+      //console.log(update);
+
+      if(update.errors)
+      {throw new Error(update.message);}
+
       elementX.value = update.coordinates.x;
       elementY.value = update.coordinates.y;
 
-      map.innerHTML = "";
+      display.innerHTML = "";
 
       let i = 0;
-      while (update.map[i]) 
+      while (update.display[i]) 
       {
-        map.innerHTML += "<span id='"+i+"'>" + update.map[i++] + "</span><br>"
+        display.innerHTML += "<span id='"+i+"'>" + update.display[i++] + "</span><br>"
       }
     } 
     catch (e) 
@@ -88,7 +91,9 @@
         ArrowLeft: "left",
         ArrowRight: "right",
         ArrowUp: "up",
-        ArrowDown: "down"
+        ArrowDown: "down",
+        Enter: "enter",
+        KeyS: "s"
     };
 
     const direction = directions[event.code];

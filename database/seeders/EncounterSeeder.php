@@ -33,7 +33,7 @@ class EncounterSeeder extends Seeder
             [
                 'id' => 4,
                 'map_id' => 1, // alpha
-                'encounter_chance' => 50
+                'encounter_chance' => 40
             ],
             [
                 'id' => 5,

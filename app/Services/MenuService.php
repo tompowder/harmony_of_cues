@@ -4,5 +4,5 @@ namespace App\Services;
 
 class MenuService
 {
-   public function test() {}
+   public function index() {}
 }

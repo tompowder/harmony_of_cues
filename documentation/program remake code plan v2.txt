@@ -563,7 +563,7 @@ If the random number does not fall inside an encounter's chance range, no encoun
 Example encounter table:
 
 Red Slime                      30%
-Forest Goblin + Red Slime      30%
+Goblin + Red Slime             30%
 Forest Wolf                    20%
 Forest Wolf x2                 10%
 No encounter                   10%
@@ -573,7 +573,7 @@ The total chance should equal 100%.
 For example:
 
 1–30   -> Red Slime
-31–60  -> Forest Goblin + Red Slime
+31–60  -> Goblin + Red Slime
 61–80  -> Forest Wolf
 81–90  -> Forest Wolf x2
 91–100 -> No encounter
