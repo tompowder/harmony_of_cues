@@ -12,12 +12,8 @@
       <button type="sumit">logout</button>
    </form><br>
 
-   <form method="POST" action="/ideas" id="test">
-   @csrf
-   <input type="number" id="x" name="x" value="{{ $coordinates["x"] }}"><br>
-   <input type="number" id="y" name="y" value="{{ $coordinates["y"] }}"><br>
-   <button type="submit"> submit </button>
-   </form>
+   <input type="number" id="x" value="{{ $coordinates["x"] }}"><br>
+   <input type="number" id="y" value="{{ $coordinates["y"] }}"><br>
 
    <div style="font-family:Consolas, monospace" id="map">
    @forelse($map as $mapPart)
@@ -32,7 +28,6 @@
 </body>
 
 <script>
-  const form = document.querySelector("#test");
   const map = document.querySelector("#map");
   const body = document.querySelector("#body");
 
@@ -41,25 +36,32 @@
 
   let moving = false;
 
-  async function sendData()
+  async function sendAction(direction = null)
   {
     if (moving) 
     {return;}
 
     moving = true;
 
-    const formData = new FormData(form);
-    
     try 
     {
-      const response = await fetch("/player-move", 
+      const response = await fetch("/player-action", 
       {
         method: "POST",
-        body: formData,
+        headers: 
+        {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify(
+        {
+            ...(direction ? { direction } : {})
+        })
       });
       let update = await response.json();
 
-      //console.log(update);
+      console.log(update);
       
       elementX.value = update.coordinates.x;
       elementY.value = update.coordinates.y;
@@ -80,34 +82,22 @@
     finally
     {moving = false;}
   }
-
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    sendData(x.value, y.value);
-  });
   
   body.addEventListener("keydown", (event) => {
-    let x = Number(elementX.value);
-    let y = Number(elementY.value);
+    const directions = {
+        ArrowLeft: "left",
+        ArrowRight: "right",
+        ArrowUp: "up",
+        ArrowDown: "down"
+    };
 
-    if(event.code === "ArrowLeft")
-    {x--;}
+    const direction = directions[event.code];
 
-    if(event.code === "ArrowRight")
-    {x++;}
-
-    if(event.code === "ArrowUp")
-    {y--;}
-
-    if(event.code === "ArrowDown")
-    {y++;}
-
-    elementX.value = x;
-    elementY.value = y;
-    sendData();
+    if (direction) {
+        event.preventDefault();
+        sendAction(direction);
+    }
   });
-
-  form.reset();
 
 </script>
 

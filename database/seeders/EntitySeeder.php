@@ -192,6 +192,14 @@ class EntitySeeder extends Seeder
                 'xp_drop' => 1000,
                 'boss' => true,
                 'ai' => $boss_ai
+            ],
+            [
+                'id' => 9,
+                'entity_id' => 11, // dummy
+                'gold_drop' => 0,
+                'xp_drop' => 0,
+                'boss' => false,
+                'ai' => json_encode(['move_selection' => 'skip'])
             ]
         ]);
 
@@ -257,6 +265,14 @@ class EntitySeeder extends Seeder
                 'stat_points_mp' => 0,
                 'stat_points_attack' => 0,
                 'stat_points_magic' => 5,
+                'stat_points_defense' => 2
+            ],
+            [ // saved attack hero
+                'id' => 3,
+                'stat_points_hp' => 0,
+                'stat_points_mp' => 0,
+                'stat_points_attack' => 5,
+                'stat_points_magic' => 0,
                 'stat_points_defense' => 2
             ]
         ]);

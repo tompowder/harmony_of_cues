@@ -36,7 +36,7 @@ class SynergySeeder extends Seeder
         [
             [
                 'id' => 1,
-                'move_id' => 15, // Flame Slash
+                'move_id' => 14, // Flame Slash
                 'synergy_id' => 1, // Draco Inferno
                 'participant' => 'self'
             ],

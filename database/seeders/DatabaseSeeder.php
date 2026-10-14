@@ -36,16 +36,8 @@ class DatabaseSeeder extends Seeder
          MapSeeder::class,
          EncounterSeeder::class,
          PointSeeder::class,
-      ]);
-
-
-      DB::table('players')->insert([
-         'id' => 1,
-         'map_id' => 1, // alpha
-         'user_id' => 1, // test
-         'gold' => 20,
-         'x' => 17,
-         'y' => 8,
+         PlayerSeeder::class,
+         SavedHeroSeeder::class
       ]);
    }
 }

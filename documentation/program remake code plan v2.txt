@@ -1343,8 +1343,14 @@ JavaScript sends request
         ↓
 Laravel processes movement
         ↓
-Database updated
-        ↓
 Response sent to JavaScript
         ↓
 Screen updated
+
+44. Backend
+
+there are 3 stats that the game can be in the map, an encounter and a menu 
+this info wil be put in the session 
+
+the JavaScript will send the request to a main controller (Dispatcher) that will figerout the game state 
+and send a request to map/encounter/menu control and get a responds back and send it to the frondend

@@ -3,28 +3,32 @@
 namespace App\Http\Controllers\map;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class MapController extends Controller
 {
    static private $solid = ['-', '|', '<', '>', 'S', '$', '#', 'I', 'R'];
 
-   public function createMapGameState() 
-   {
-      
-   }
 
    public function getMapGameState()
    {
-      $map = DB::table('maps')->where('id', '=', '3')->get();
+      $user = Auth::user();
+
+      $player = DB::table('players')->where('user_id', '=', $user->id)->get()[0];
+
+      $map = DB::table('maps')->where('id', '=', $player->map_id)->get();
 
       $mapData = explode("\n", $map[0]->map_data);
 
-      $x = 17;
-      $y = 8;
+      $x = $player->x;
+      $y = $player->y;
 
       session(["x" => $x, "y" => $y]);
       session(["map" => $mapData]);
+      session(["player" => $player]);
+
       $mapData[$y][$x] = "X";
 
       foreach ($mapData as &$mapPart) {
@@ -41,15 +45,33 @@ class MapController extends Controller
       );
    }
 
-   public function updateMapGameState()
+   public function updateMapGameState(Request $request)
    {
       $map = session()->get("map");
+
+      $validated = $request->validate([
+         'direction' =>
+         [
+            'required_if:action,move',
+            'in:left,right,up,down',
+         ],
+      ]);
 
       $currentX  = (int) session()->get('x');
       $currentY  = (int) session()->get('y');
 
-      $newX  = (int) request('x');
-      $newY  = (int) request('y');
+      $offsets =
+         [
+            'left'  => [-1, 0],
+            'right' => [1, 0],
+            'up'    => [0, -1],
+            'down'  => [0, 1],
+         ];
+
+      $offset = $offsets[$validated['direction']];
+
+      $newX = $offset[0] + $currentX;
+      $newY = $offset[1] + $currentY;
 
       $tile = $map[$newY][$newX];
 
