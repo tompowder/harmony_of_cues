@@ -221,7 +221,7 @@ class LevelSchemaSeeder extends Seeder
             ],
             [
                 'id' => 16,
-                'level_schema_id' => 4, // slime
+                'level_schema_id' => 4, // golden goblin
                 'move_id' => 9, // Guard
                 'level_requirement' => 1
             ],

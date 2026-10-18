@@ -13,7 +13,6 @@ return new class extends Migration
     {
       Schema::create('move_saved_heroes', function (Blueprint $table) {
          $table->id();
-         $table->foreignId('level_schema_id')->constrained('level_schemas');
          $table->foreignId('move_id')->nullable()->constrained('moves');
          $table->foreignId('saved_heroes_id')->nullable()->constrained('saved_heroes');
          $table->unsignedInteger('slot');

@@ -88,6 +88,14 @@ class EncounterSeeder extends Seeder
                 'min_level' => 5,
                 'max_level' => 5,
                 'quantity' => 1
+            ],
+            [
+                'id' => 6,
+                'encounter_id' => 1,
+                'model_monster_id' => 3, // slime
+                'min_level' => 2,
+                'max_level' => 3,
+                'quantity' => 1
             ]
         ]);
         
