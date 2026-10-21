@@ -29,7 +29,7 @@ class LevelSchemaSeeder extends Seeder
             [
                 'id' => 2,
                 'max_hp' => 600,
-                'max_mp' => 300,
+                'max_mp' => 700,
                 'max_attack' => 100,
                 'max_magic' => 320,
                 'max_defense' => 150,

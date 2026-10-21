@@ -20,14 +20,14 @@ class EntitySeeder extends Seeder
                 'level_schema_id' => 1, // attack hero
                 'affinity_id' => 4, // none
                 'ability_id' => 4, // dual wielding
-                'name' => 'jonathan the warrior',
+                'name' => 'jonathan',
             ],
             [
                 'id' => 2,
                 'level_schema_id' => 2, // magic hero
                 'affinity_id' => 4, // none
                 'ability_id' => 5, // layered armor
-                'name' => 'rosa the mage',
+                'name' => 'rosa',
             ],
             [
                 'id' => 3,
@@ -95,35 +95,38 @@ class EntitySeeder extends Seeder
         ]);
 
         $boss_ai = json_encode([
-         'phases' => [
-            'name' => 'phase_1',
-            'condition' => [
-               'stat' => 'hp_percent',
-               'operator' => '>',
-               'value' => 75
+         'phases' => 
+         [ 
+            [
+               'name' => 'phase_1',
+               'condition' => [
+                  'stat' => 'hp_percent',
+                  'operator' => '>',
+                  'value' => 75
+               ],
+               'moves' => [9, 10, 4, 16, 27], // Guard, Magic Guard, Flame Point, Blazing Kick, Pommel Strike
+               'move_selection' => 'careful'
             ],
-            'moves' => [9, 10, 4, 16, 27], // Guard, Magic Guard, Flame Point, Blazing Kick, Pommel Strike
-            'move_selection' => 'careful'
-         ],
-         [
-            'name' => 'phase_2',
-            'condition' => [
-               'stat' => 'hp_percent',
-               'operator' => '<=',
-               'value' => 75
+            [
+               'name' => 'phase_2',
+               'condition' => [
+                  'stat' => 'hp_percent',
+                  'operator' => '<=',
+                  'value' => 75
+               ],
+               'moves' => [4, 16, 5, 14, 27], // Flame Point, Blazing Kick, Fire Burst, Flame Slash, Pommel Strike
+               'move_selection' => 'random'
             ],
-            'moves' => [4, 16, 5, 14, 27], // Flame Point, Blazing Kick, Fire Burst, Flame Slash, Pommel Strike
-            'move_selection' => 'random'
-         ],
-         [
-            'name' => 'phase_3',
-            'condition' => [
-               'stat' => 'hp_percent',
-               'operator' => '<=',
-               'value' => 40
-            ],
-            'moves' => [16, 5, 14, 25], // Blazing Kick, Fire Burst, Flame Slash => Draco Inferno, Flare Bash
-            'move_selection' => 'reckless'
+            [
+               'name' => 'phase_3',
+               'condition' => [
+                  'stat' => 'hp_percent',
+                  'operator' => '<=',
+                  'value' => 40
+               ],
+               'moves' => [16, 5, 14, 25], // Blazing Kick, Fire Burst, Flame Slash => Draco Inferno, Flare Bash
+               'move_selection' => 'reckless'
+            ]
          ]
         ]);
 

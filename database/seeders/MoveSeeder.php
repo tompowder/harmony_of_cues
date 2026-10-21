@@ -18,7 +18,7 @@ class MoveSeeder extends Seeder
             [
                 'id' => 1,
                 'affinity_id' => 2, // water
-                'name' => 'Water Blast',
+                'name' => 'Water-Blast',
                 'type' => 'magic',
                 'power' => 2.1,
                 'effect' => null,
@@ -29,7 +29,7 @@ class MoveSeeder extends Seeder
             [
                 'id' => 2,
                 'affinity_id' => 3, // nature
-                'name' => 'Nature\'s wrath',
+                'name' => 'Nature\'s-wrath',
                 'type' => 'magic',
                 'power' => 3,
                 'effect' => null,
@@ -40,7 +40,7 @@ class MoveSeeder extends Seeder
             [
                 'id' => 3,
                 'affinity_id' => 4, // none
-                'name' => 'Arcane Bolt',
+                'name' => 'Arcane-Bolt',
                 'type' => 'magic',
                 'power' => 2,
                 'effect' => null,
@@ -51,7 +51,7 @@ class MoveSeeder extends Seeder
             [
                 'id' => 4,
                 'affinity_id' => 1, // fire
-                'name' => 'Flame Point',
+                'name' => 'Flame-Point',
                 'type' => 'magic',
                 'power' => 2.7,
                 'effect' => null,
@@ -62,7 +62,7 @@ class MoveSeeder extends Seeder
             [
                 'id' => 5,
                 'affinity_id' => 1, // fire
-                'name' => 'Fire Burst',
+                'name' => 'Fire-Burst',
                 'type' => 'magic',
                 'power' => 3,
                 'effect' => null,
@@ -73,7 +73,7 @@ class MoveSeeder extends Seeder
             [
                 'id' => 6,
                 'affinity_id' => 3, // nature
-                'name' => 'Root Hook',
+                'name' => 'Root-Hook',
                 'type' => 'magic',
                 'power' => 2.2,
                 'effect' => null,
@@ -95,7 +95,7 @@ class MoveSeeder extends Seeder
             [
                 'id' => 8,
                 'affinity_id' => 4, // none
-                'name' => 'Mass Heal',
+                'name' => 'Mass-Heal',
                 'type' => 'magic',
                 'power' => 4,
                'effect' => json_encode(['effect' => 'healing']),
@@ -117,7 +117,7 @@ class MoveSeeder extends Seeder
             [
                 'id' => 10,
                 'affinity_id' => 4, // none
-                'name' => 'Magic Guard',
+                'name' => 'Magic-Guard',
                 'type' => 'magic',
                 'power' => 0.75,
                'effect' => json_encode(['effect' => 'damage_reduction', 'duration' => '5 turns']),
@@ -128,7 +128,7 @@ class MoveSeeder extends Seeder
             [ // ability move
                 'id' => 11,
                 'affinity_id' => 1, // fire
-                'name' => 'Fiery Retribution',
+                'name' => 'Fiery-Retribution',
                 'type' => 'piercing',
                 'power' => 1,
                 'effect' => null,
@@ -139,7 +139,7 @@ class MoveSeeder extends Seeder
             [ // ability move
                 'id' => 12,
                 'affinity_id' => 4, // none
-                'name' => 'Bone Jab',
+                'name' => 'Bone-Jab',
                 'type' => 'piercing',
                 'power' => 1.2,
                 'effect' => null,
@@ -161,7 +161,7 @@ class MoveSeeder extends Seeder
             [ // weapon move
                 'id' => 14,
                 'affinity_id' => 1, // fire
-                'name' => 'Flame Slash',
+                'name' => 'Flame-Slash',
                 'type' => 'attack',
                 'power' => 4,
                 'effect' => null,
@@ -183,7 +183,7 @@ class MoveSeeder extends Seeder
             [
                 'id' => 16,
                 'affinity_id' => 1, // fire
-                'name' => 'Blazing Kick',
+                'name' => 'Blazing-Kick',
                 'type' => 'attack',
                 'power' => 3,
                 'effect' => null,
@@ -194,7 +194,7 @@ class MoveSeeder extends Seeder
             [
                 'id' => 17,
                 'affinity_id' => 2, // water
-                'name' => 'Water Whip',
+                'name' => 'Water-Whip',
                 'type' => 'attack',
                 'power' => 3.5,
                 'effect' => null,
@@ -205,7 +205,7 @@ class MoveSeeder extends Seeder
             [
                 'id' => 18,
                 'affinity_id' => 3, // nature
-                'name' => 'Barbed Upercut',
+                'name' => 'Barbed-Upercut',
                 'type' => 'attack',
                 'power' => 3,
                 'effect' => null,
@@ -216,7 +216,7 @@ class MoveSeeder extends Seeder
             [
                 'id' => 19,
                 'affinity_id' => 5, // metal
-                'name' => 'Metal Clad Charge',
+                'name' => 'Metal-Clad-Charge',
                 'type' => 'attack',
                 'power' => 4.2,
                 'effect' => null,
@@ -271,7 +271,7 @@ class MoveSeeder extends Seeder
             [ // monster move
                 'id' => 24,
                 'affinity_id' => 3, // nature
-               'name' => 'Nature Scratch',
+               'name' => 'Nature-Scratch',
                 'type' => 'attack',
                 'power' => 2,
                 'effect' => null,
@@ -282,7 +282,7 @@ class MoveSeeder extends Seeder
             [ // monster move
                 'id' => 25,
                 'affinity_id' => 1, // fire
-               'name' => 'Flare Bash',
+               'name' => 'Flare-Bash',
                 'type' => 'attack',
                'power' => 3.2,
                 'effect' => null,
@@ -293,7 +293,7 @@ class MoveSeeder extends Seeder
             [ // monster move
                 'id' => 26,
                 'affinity_id' => 5, // metal 
-               'name' => 'Iron Claw',
+               'name' => 'Iron-Claw',
                 'type' => 'attack',
                 'power' => 3,
                 'effect' => null,
@@ -304,7 +304,7 @@ class MoveSeeder extends Seeder
             [
                 'id' => 27,
                 'affinity_id' => 4, // none
-                'name' => 'Pommel Strike',
+                'name' => 'Pommel-Strike',
                 'type' => 'attack',
                'power' => 1.5,
                'effect' => json_encode(['extra_effect' => ['attack_multiplier' => 0.85, 'target' => 'enemy'], 'duration' => '2 turns']),

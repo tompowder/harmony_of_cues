@@ -725,10 +725,11 @@ Magic
 Piercing
 
 Heroes and normal monsters can have a maximum of 4 moves.
+the four-move limit is shared between Attack and Magic moves
+
 Bosses can have more than 4 moves.
 
 Piercing moves cannot be learnd by entities and are only used by abilities
-
 
 21. Attack Moves
 

@@ -23,7 +23,8 @@ class GameController extends Controller
       $x = $player->x;
       $y = $player->y;
 
-      session(["x" => $x, "y" => $y]);
+      session(["map_x" => $x, "map_y" => $y]);
+      session(["menu_x" => 0, "menu_y" => 0]);
       session(["map" => $mapData]);
       session(["player" => $player]);
       session(["gameState" => "map"]);
@@ -50,17 +51,17 @@ class GameController extends Controller
          'direction' =>
          [
             'required_if:action,move',
-            'in:left,right,up,down',
+            'in:left,right,up,down,enter',
          ],
       ]);
 
       $offsets =
       [
-         'left'  => [-1, 0],
-         'right' => [1, 0],
-         'up'    => [0, -1],
-         'down'  => [0, 1],
-         'enter' => [0, 0]
+         'left'  => ['x' => -1, 'y' => 0],
+         'right' => ['x' => 1, 'y' => 0],
+         'up'    => ['x' => 0, 'y' => -1],
+         'down'  => ['x' => 0, 'y' => 1],
+         'enter' => ['x' => 0, 'y' => 0]
       ];
 
       $offset = $offsets[$validated['direction']];

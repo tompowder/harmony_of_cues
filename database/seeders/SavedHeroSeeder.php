@@ -36,7 +36,7 @@ class SavedHeroSeeder extends Seeder
           'id' => 2,
           'move_id' => 18,
           'saved_heroes_id' => 1,
-          'slot' => 1,
+          'slot' => 2,
           'source' => 'level'
         ]
       ]);

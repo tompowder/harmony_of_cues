@@ -10,8 +10,8 @@ class MapService
 
    public function loadMap()
    {
-      $currentX  = (int) session()->get('x');
-      $currentY  = (int) session()->get('y');
+      $currentX  = (int) session()->get('map_x');
+      $currentY  = (int) session()->get('map_y');
       session(["gameState" => "map"]);
 
       $map = session()->get("map");
@@ -31,12 +31,12 @@ class MapService
 
    public function index(array $offset)
    {
-      $currentX  = (int) session()->get('x');
-      $currentY  = (int) session()->get('y');
+      $currentX  = (int) session()->get('map_x');
+      $currentY  = (int) session()->get('map_y');
       session(["gameState" => "map"]);
 
-      $newX = $offset[0] + $currentX;
-      $newY = $offset[1] + $currentY;
+      $newX = $offset['x'] + $currentX;
+      $newY = $offset['y'] + $currentY;
 
       $map = session()->get("map");
       $tile = $map[$newY][$newX];
@@ -44,7 +44,7 @@ class MapService
       if (!collect(self::$solid)->contains($tile)) 
       {
          $map[$newY][$newX] = 'X';
-         session(["x" => $newX, "y" => $newY]);
+         session(["map_x" => $newX, "map_y" => $newY]);
          $coordinates = ["x" => $newX, "y" => $newY];
       } 
       else 
@@ -71,7 +71,7 @@ class MapService
       ];
 
       if (isset($activator[$tile])) 
-      {$this->{$activator[$tile]}();}
+      {$data = $this->{$activator[$tile]}();}
 
       return response()->json($data);
    }
