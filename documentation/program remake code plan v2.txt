@@ -582,8 +582,6 @@ If the generated number is 26, the player encounters a Red Slime.
 If the generated number is 88, the player encounters two Forest Wolves.
 If the generated number is 93, no encounter occurs.
 
-The exact method used to select the encounter can be implemented using the encounter table and its encounter_chance values.
-
 
 14. Loading an Encounter
 
@@ -678,10 +676,11 @@ this makes it so if the average level of the party is 5 and the enemy is 8 there
 
 The exact formula and the +7 balancing value can be changed during development and balancing.
 
+
 18. Skip
 
 If a hero selects Skip:
-The hero performs no normal move.
+The hero performs no move.
 The game moves to the next hero.
 Skip can potentially be used as part of a synergy.
 
