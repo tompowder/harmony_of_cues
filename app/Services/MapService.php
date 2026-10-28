@@ -29,11 +29,17 @@ class MapService
 
    static private $solid = ['-', '|', '<', '>', 'S', '$', '#', 'I', 'R'];
 
-   public function index(array $offset)
+   public function handleInput(array $offset)
    {
       $currentX  = (int) session()->get('map_x');
       $currentY  = (int) session()->get('map_y');
       session(["gameState" => "map"]);
+
+      if($offset['x'] == -1 && $offset['y'] == -1)
+      {
+         $offset['x'] = 0; 
+         $offset['y'] = 0;
+      }
 
       $newX = $offset['x'] + $currentX;
       $newY = $offset['y'] + $currentY;
@@ -87,6 +93,6 @@ class MapService
    {
       session(["gameState" => "menu"]);
       $menuService = new MenuService();
-      return $menuService->index();
+      return $menuService->handleInput();
    }
 }

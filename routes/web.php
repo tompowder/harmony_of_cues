@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\map\MapController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\login_register\LoginController;
 use App\Http\Controllers\login_register\RegisterController;
@@ -10,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 //Route::post('player-action', [MapController::class, 'updateMapGameState']);
 
 Route::get('game', [GameController::class, 'loadGame'])->middleware('auth')->name('game');
-Route::post('player-action', [GameController::class, 'index']);
+Route::post('player-action', [GameController::class, 'dispatchInput']);
 
 Route::view('/', 'login');
 Route::view('login', 'login')->name('login');

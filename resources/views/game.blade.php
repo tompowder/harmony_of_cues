@@ -93,6 +93,7 @@
         ArrowUp: "up",
         ArrowDown: "down",
         Enter: "enter",
+        Backspace: "back",
         KeyS: "s"
     };
 

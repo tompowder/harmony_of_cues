@@ -21,23 +21,30 @@ class SavedHeroSeeder extends Seeder
         'model_hero_id' => 1,
         'level' => 1,
         'xp' => 0
-      ]);
+      ]); 
 
       DB::table('move_saved_heroes')->insert(
       [
         [
-          'id' => 1,
-          'move_id' => 15,
-          'saved_heroes_id' => 1,
-          'slot' => 1,
-          'source' => 'level'
+         'id' => 1,
+         'move_id' => 15,
+         'saved_heroes_id' => 1,
+         'slot' => 1,
+         'source' => 'level'
         ],
         [
-          'id' => 2,
-          'move_id' => 18,
-          'saved_heroes_id' => 1,
-          'slot' => 2,
-          'source' => 'level'
+         'id' => 2,
+         'move_id' => 18,
+         'saved_heroes_id' => 1,
+         'slot' => 2,
+         'source' => 'level'
+        ],
+        [
+         'id' => 3,
+         'move_id' => 5, //Fire-Burst
+         'saved_heroes_id' => 1,
+         'slot' => 3,
+         'source' => 'level'
         ]
       ]);
       

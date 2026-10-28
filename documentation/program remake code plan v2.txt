@@ -1326,7 +1326,39 @@ this is the same hero selection menu used in 7.1
 | Back                      |
 -----------------------------
 
-43. Backend and Frontend Communication
+43. Dialogue box
+
+a dialogue box 
+
+below the hero box that has feetback with wat the player is doing
+
+Combat
+Incounter start: a Goblin is in the way!
+Selecting an action: Select an action.
+Selecting a move: Choose a magic move.
+Selecting a target: Choose an enemy to target.
+No moves available: Jonathan doesn't know any magic moves.
+Insufficient HP: Not enough HP to use Tackle.
+Insufficient MP: This hero has no MP remaining.
+Escape successful: Your party escaped the encounter safely.
+Escape failed: Your party couldn't escape the encounter!
+Synergy activated: Holy Water synergy activated!
+Move used: Jonathan used Tackle on the Goblin, dealing 10 damage.
+Affinity advantage: Water Blast has a advantag!
+Affinity disadvantage: Fire Blast is disadvantages.
+Enemy defeated: The Goblin was defeated!
+Encounter victory: Victory! Your party earned 50 XP.
+Encounter defeat: Your party was defeated.
+
+Menu
+Equipment drop: The Goblin dropped Leather armor.
+Gold gained: Your party got 25 Gold.
+Level up: Jonathan leveled up from 2 to 3!
+Move forgotten: Jonathan forgot Tackle.
+Move learned: Jonathan learned Heal!
+Insufficient gold: You don't have enough Gold.
+
+44. Backend and Frontend Communication
 
 The game needs a way for the frontend to communicate player actions to the backend.
 this is the approaches is currently being used.

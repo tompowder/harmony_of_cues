@@ -3,10 +3,20 @@
 namespace App\Services;
 
 use Dom\Entity;
+use App\Services\MapService;
+use Exception;
 use Illuminate\Support\Facades\DB;
 
 class EncounterService
 {
+   private MenuService $MService;
+   private string $dialogue;
+
+   function __construct() 
+   {
+      $this->MService = new MenuService();
+   }
+
    public function loadEncounter()
    {
       $player = session()->get('player');
@@ -16,10 +26,12 @@ class EncounterService
       $chance = 0;
       $encounter = null;
 
-      foreach ($encounters as $candidate) {
+      foreach ($encounters as $candidate) 
+      {
          $chance += (int) $candidate->encounter_chance;
 
-         if ($roll <= $chance) {
+         if ($roll <= $chance) 
+         {
             $encounter = $candidate;
             break;
          }
@@ -128,24 +140,29 @@ class EncounterService
 
       $monsters = $this->processMonster($totalMonsterData);
       $heroes = $this->processHero($totalheroData);
+      $monsterNames = implode(', ', array_map(fn(array $monster) => $monster['monster_name'], $monsters));
 
-      $heroes[0]['selected_hero'] = true;
+      $dialogue = $this->MService->processDialogue(['type' => 'encounter' ,'id' => 'encounter_start'], ['monster' => $monsterNames]);
 
-      session(
+      $encounter = 
       [
-         'encounter' => 
-         [
-            'heroes' => $heroes,
-            'monsters' => $monsters,
-            'turn' => 1,
-            'phase' => 'hero_actions',
-         ],
+         'heroes' => $heroes,
+         'monsters' => $monsters,
+         'turn' => 1,
+         'phase' => 'hero_actions'
+      ];
+
+      $encounter = $this->selectNextHero($encounter, -1);
+
+      session([
+         'encounter' => $encounter,
+         'dialogue' => $dialogue
       ]);
 
-      return $this->displayEncounter($monsters, $heroes);
+      return $this->displayEncounter($encounter['monsters'], $encounter['heroes'], $dialogue);
    }
 
-   private function displayEncounter(array $monsters, array $heroes, array $selected = ['x' => 0, 'y' => 0])
+   private function displayEncounter(array $monsters, array $heroes, string $dialogue, array $selected = ['x' => 0, 'y' => 0])
    {
       // output exsampel
       // ------------ ----------
@@ -160,16 +177,12 @@ class EncounterService
       // | Run    Skip  |
       // ----------------
 
-      $targets = array_filter($heroes, fn($hero) => $hero['selected_hero'] == true)[0]['target'];
-      
-      if($targets['all_target'] === false)
-      {
-         $targets['enemies'] = [$targets['enemies'][$selected['x']]];
-      }
+      $menuService = $this->MService;
+      $targetMarkers = $this->getTargetMarkers($heroes, $selected);
 
-      $monsterBoxes = array_map(fn(array $monster) => $this->createBox(
+      $monsterBoxes = array_map(fn(array $monster) => $menuService->createBox(
       [
-         (in_array($monster['instance_id'], $targets['enemies']) ? '*' : ' ') . "{$monster['monster_name']} ",
+         (in_array($monster['instance_id'], $targetMarkers['enemies']) ? '*' : ' ') . "{$monster['monster_name']} ",
          " HP {$monster['current_stats']['hp']}/{$monster['total_stats']['hp']} ",
       ]), $monsters);
       
@@ -177,49 +190,29 @@ class EncounterService
 
       foreach ($heroes as $hero) 
       {
-         $markt = in_array($hero['instance_id'], $targets['allies']) ? '*' : ' ' ;
+         $mark = in_array($hero['instance_id'], $targetMarkers['allies']) ? '*' : ' ';
 
          $box =
          [
-            $markt . "{$hero['hero_name']} ",
+            $mark . "{$hero['hero_name']} ",
             " HP {$hero['current_stats']['hp']}/{$hero['total_stats']['hp']} ",
             " MP {$hero['current_stats']['mp']}/{$hero['total_stats']['mp']} "
          ];
 
          if($hero['selected_hero'] && !$hero['selected_move'])
          {
-            $options = $this->getHeroOptions($hero);
+            $options = $this->formatHeroOptions($hero, $selected);
 
-            if (!in_array('Attack', $options, true)) 
-            {
-               $moveType = strtolower($hero['selected_action']);
-
-               $moves = array_filter($hero['moves'], fn($move) => $move['type'] === $moveType);
-               $options = array_map(fn($move) => $move['move_name']. " " . $move['cost'] . ($move['type'] == 'magic' ? 'mp': 'hp'), $moves);
-            }
-
-            $x = $selected['x'];
-            $y = $selected['y'];
-
-            
-            $options = array_map(fn (string $option) => ' ' . $option, $options);
-            $options = array_chunk($options, 2);
-            $options = array_pad($options, 2, []); 
-
-            $options = array_map(fn (array $row) => array_pad($row, 2, ''), $options); 
-
-            
-            $options[$y][$x][0] = '*';  
-
-            $box[] = "{$options[0][0]}{$options[0][1]} ";  
-            $box[] = "{$options[1][0]}{$options[1][1]} ";
-
+            $box = array_merge($box, $options);
          }
 
-         $heroBoxes[] = $this->createBox($box);
+         $heroBoxes[] = $menuService->createBox($box);
       }
 
-      $alleBoxes = array_merge($this->combineBoxes($monsterBoxes), $this->combineBoxes($heroBoxes));
+      $lines = $menuService->createBox([$dialogue]);
+      $dialogueBox = array_map(fn(string $line) => str_replace(' ', '&nbsp', $line), $lines);
+      
+      $alleBoxes = array_merge($menuService->combineBoxes($monsterBoxes), $menuService->combineBoxes($heroBoxes), $dialogueBox);
 
       return ["display" => $alleBoxes, "coordinates" => $selected];
    }
@@ -232,45 +225,73 @@ class EncounterService
       if (in_array($selectedOption, ['Attack', 'Magic'], true) && $selectedMove === null) 
       {
          $moveType = strtolower($hero['selected_action']);
-
          $moves = array_filter($hero['moves'], fn($move) => $move['type'] === $moveType);
-         $moveNames = array_map(fn($move) => $move['move_name'], $moves);
 
-         return $moveNames;
+         return array_column($moves, 'move_name', 'move_id');;
       } 
 
-      return ['Attack', 'Magic', 'Run', 'Skip'];
+      return [1 => 'Attack', 2 => 'Magic', 3 => 'Run', 4 => 'Skip'];
    }
 
-   public function createBox(array $content)
+   private function formatHeroOptions(array $hero, array $selected)
    {
-      $width = max(array_map('strlen', $content));
+      $options = $this->getHeroOptions($hero);
 
-      $LeftRichtborder = 2;
-
-      $topBottomBorder = str_repeat('-', $width + $LeftRichtborder);
-
-      $lines = array_map(fn (string $line) => '|' . str_pad($line, $width) . '|', $content);
-
-      array_unshift($lines, $topBottomBorder);
-      $lines[] = $topBottomBorder;
-
-      return $lines;
-   }
-
-   private function combineBoxes(array $boxes)
-   {
-      $maxLines = max(array_map('count', $boxes));
-      $lines = [];
-
-      for ($i = 0; $i < $maxLines; $i++)
+      if (!in_array('Attack', $options, true) && !in_array('Magic', $options, true)) 
       {
-         $lines[] = implode(' ', array_map(fn($box) => $box[$i], $boxes));
+         $moveType = strtolower($hero['selected_action']);
+
+         $moves = array_filter($hero['moves'], fn($move) => $move['type'] === $moveType);
+         $options = array_map(fn($move) => $move['move_name']. " " . $move['cost'] . ($move['type'] == 'magic' ? 'mp': 'hp'), $moves);
+      }
+      else
+      {
+         $options = array_values($options);
       }
 
-      $lines = array_map(fn(string $line) => str_replace(' ', '&nbsp', $line), $lines);
+      // the menu uses two columns and two rows
+      $options = array_map(fn (string $option) => ' ' . $option, $options);
+      $options = array_slice($options, 0, 4);
+      $options = array_pad($options, 4, '');
+      $options = array_chunk($options, 2);
 
-      return $lines;
+      $options[$selected['y']][$selected['x']][0] = '*';  
+
+      $box = 
+      [
+         "{$options[0][0]}{$options[0][1]} ",
+         "{$options[1][0]}{$options[1][1]} "
+      ];  
+        
+      return $box;
+   }
+
+   private function getTargetMarkers(array $heroes, array $selected)
+   {
+      $hero = array_filter($heroes, fn($hero) => $hero['selected_hero'] == true);
+      $targets = array_first($hero)['targets'];
+      $selectable = $targets['selectable'];
+
+      if ($targets['target_mode'] === null)
+      {return ['enemies' => [], 'allies' => []];}
+
+      if ($targets['target_mode'] === 'all')
+      {return $selectable;}
+      
+      if($targets['target_mode'] === 'single')
+      {$selectableTargets['enemies'] = [$selectable['enemies'][$selected['x']]];}
+
+      $targetGroup = $selected['y'] === 0 ? 'enemies' : 'allies'; 
+      $targetId = $selectable[$targetGroup][$selected['x']];
+
+      if($targetGroup == 'enemies')
+      {
+         return ['enemies' => [$targetId], 'allies' => []];
+      }
+      elseif($targetGroup == 'allies')
+      {
+         return ['enemies' => [], 'allies' => [$targetId]];
+      }
    }
 
    private function processHero(array $rawDataHero)
@@ -302,7 +323,12 @@ class EncounterService
             'selected_hero' => false,
             'selected_action' => null,
             'selected_move' => null,
-            'target' => ['allies' => [], 'enemies' => [], 'all_target' => null]
+            'targets' => 
+            [
+               'selectable' => ['allies' => [], 'enemies' => []], 
+               'selected' => ['allies' => [], 'enemies' => []], 
+               'target_mode' => null
+            ]
          ];
 
          $stats = $this->calculateStats($hero, $Hdata);
@@ -348,7 +374,12 @@ class EncounterService
             'equipment' => $this->processEquipment($EData),
             'moves' => $this->processMove($MData),
             'selected_move' => null,
-            'target' => ['allies' => [], 'enemies' => [], 'all_target' => null]
+            'targets' => 
+            [
+               'selectable' => ['allies' => [], 'enemies' => []], 
+               'selected' => ['allies' => [], 'enemies' => []], 
+               'target_mode' => null
+            ]
          ];
 
          $stats = $this->calculateStats($monster, $Mondata);
@@ -482,296 +513,375 @@ class EncounterService
       return $stats;
    } 
 
-   public function index(array $offset) // offset has x and y and thies can be 0, 1, -1
+   public function handleInput(array $offset) // offset has x and y and thies can be 0, 1, -1
    {
-      $encounter = session()->get('encounter');
-
-      $currentX  = (int) session()->get('menu_x');
-      $currentY  = (int) session()->get('menu_y');
+      [$encounter, $coordinates] = $this->getEncounterState($offset);
       
-      $coordinates = ["x" => $currentX, "y" => $currentY];
-      $coordinates["x"] += $offset['x'];
-      $coordinates["y"] += $offset['y'];
-
-      $hero = array_filter($encounter['heroes'], fn($hero) => $hero['selected_hero'] == true)[0];
-
-      if($hero['selected_move'] !== null) // need to be able to slect all monster/hero 
-      {
-         $encounter = $this->processTargeting($hero, 'heroes', $encounter);
-         $targetes = $encounter['heroes'][$hero['instance_id']]['target'];
-
-         $options = [$targetes['enemies'], $targetes['allies']];
-
-         if($targetes['all_target'] == true)
-         {$options = [0];}
-         elseif($targetes['all_target'] == false)
-         {
-            $max = max(count($options[0]), count($options[1]));
-            $options = array_pad($options, 2, null);
-            $options = array_map(fn (array $row) => array_pad($row, $max, null), $options); 
-         }
-      }
-      else
-      {
-         $options = array_chunk($this->getHeroOptions($hero), 2);
-         $options = array_pad($options, 2, null);
-      }
-      
-      $maxX = count($options[0]) - 1;
-      $maxY = count($options) - 1;
-
-      if($coordinates["x"] > $maxX)
-      {$coordinates["x"] = $maxX;}
-
-      if($coordinates["x"] < 0)
-      {$coordinates["x"] = 0;}
-
-      if($coordinates["y"] > $maxY)
-      {$coordinates["y"] = $maxY;}
-
-      if($coordinates["y"] < 0) 
-      {$coordinates["y"] = 0;}
-
-      $hover = $options[$coordinates["y"]][$coordinates["x"]];
-
-      if($hover === null)
-      {
-         $coordinates["x"] -= $offset['x'];
-         $coordinates["y"] -= $offset['y'];
-      }
-
-      // make so backspace has offset of -1, -1 and make it so moveslect menu goes to the actions menu
-      // and the if on the actions menu try to ge back to the prefes hero
-
-      if($offset['x'] == 0 && $offset['y'] == 0) // 0 x, 0 y means a enter.
-      {
-         $encounter = $this->processHeroSelect($encounter, $coordinates);
-
-         $hero = $encounter['heroes'][$hero['instance_id']];
-
-         if($hero['selected_move'] !== null) 
-         {
-            $encounter = $this->processTargeting($hero, 'heroes', $encounter);
-            $targetes = $encounter['heroes'][$hero['instance_id']]['target'];
-            $coordinates = ["x" => 0, "y" => 0];
-         }
-
-         if($encounter['phase'] == 'monster_actions')
-         {
-            $encounter['monsters'] = $this->processMonsterAi($encounter['monsters']);
-         }
-      }
+      [$encounter, $coordinates] = $this->processEncounterInput($encounter, $coordinates, $offset);
 
       session(
       [
+         'menu_x' => $coordinates["x"],
+         'menu_y' => $coordinates["y"],
+         'dialogue' => $this->dialogue,
          'encounter' => 
          [
             'heroes' => $encounter['heroes'],
             'monsters' => $encounter['monsters'],
             'turn' => $encounter['turn'],
             'phase' => $encounter['phase'],
-         ],
+         ]
       ]);
 
-      session(["menu_x" => $coordinates["x"], "menu_y" => $coordinates["y"]]);
+      return $this->displayEncounter($encounter['monsters'], $encounter['heroes'], $this->dialogue, $coordinates);
+   }
 
-      return $this->displayEncounter($encounter['monsters'], $encounter['heroes'], $coordinates);
+   private function getEncounterState(array $offset)
+   {
+      $encounter = session()->get('encounter');
+      $this->dialogue = session()->get('dialogue');
+      
+      $hero = array_first(array_filter($encounter['heroes'], fn($hero) => $hero['selected_hero'] == true));
+      
+      // get the dimensions of the heroes options menu
+      if($hero['selected_move'] !== null) // gets the dimensions for the target menu
+      {
+         $targetes = $this->processTargeting($hero, 'heroes', $encounter);
+         $selectableTargets = $targetes['selectable'];
+
+         $options = [$selectableTargets['enemies'], $selectableTargets['allies']];
+
+         if($targetes['target_mode'] == 'all')
+         {$options = [[null],[null]];}
+         elseif($targetes['target_mode'] == 'single')
+         {
+            $max = max(count($options[0]), count($options[1]));
+            $options = array_pad($options, 2, null);
+            $options = array_map(fn (array $row) => array_pad($row, $max, null), $options); 
+         }
+      }
+      else // gets the dimensions for the move/action menu
+      {
+         $options = array_values($this->getHeroOptions($hero));
+         $options = $options === [] ? [null, null, null] : $options; // if the hero does not have that type of move
+         $options = array_chunk($options, 2);
+         $options = array_map(fn (array $row) => array_pad($row, 2, null), $options); 
+      }
+      
+      $coordinates = $this->MService->clampCoordinates($options, $offset);
+
+      return [$encounter, $coordinates];
+   }
+
+   private function processEncounterInput(array $encounter, array $coordinates, array $offset)
+   {
+      // make so backspace has offset of -1, -1 and make it so moveslect menu goes to the actions menu
+      // and the if on the actions menu try to ge back to the prefes hero
+      if($offset['x'] == -1 && $offset['y'] == -1)
+      {
+         $encounter = $this->processHeroBack($encounter, $coordinates);
+      }
+
+      // 0 x, 0 y means a enter and slect wat the player is hovering over
+      elseif($offset['x'] == 0 && $offset['y'] == 0) 
+      {
+         $encounter = $this->processHeroEnter($encounter, $coordinates);
+         
+         $hero = array_first(array_filter($encounter['heroes'], fn($hero) => $hero['selected_hero'] == true));
+         $heroKey = $hero['instance_id'];
+
+         if(in_array($hero['selected_action'], ['Run', 'Skip'], true) ||  // if the hero has select slected a action/target
+           (count($hero['targets']['selected']['enemies']) > 0 || count($hero['targets']['selected']['allies']) > 0)) 
+         {
+            $encounter = $this->selectNextHero($encounter, $heroKey);
+            $coordinates = ['x' => 0, 'y' => 0];
+         }
+         elseif($hero['selected_move'] !== null) 
+         {
+            $encounter['heroes'][$heroKey]['targets'] = $this->processTargeting($hero, 'heroes', $encounter);
+            $coordinates = ["x" => 0, "y" => 0];
+         }
+
+         if($encounter['phase'] == 'monster_actions')
+         {
+            $this->encounterPhaseChange($encounter);
+         }
+      }
+
+      return [$encounter, $coordinates];
+   }
+
+   private function processHeroBack(array $encounter, array $coordinates)
+   {
+      dd('test');
+
+      return $encounter;
    }
    
    private function processTargeting(array $entity, string $entityType, array $encounter)
    {
-      // target = ['allies' => [], 'enemies' => [], 'all_target' => bool]
+      // 'targets' => 
+      // [
+      //    'selectable' => ['allies' => [], 'enemies' => []], wat the move can hit
+      //    'selected' => ['allies' => [], 'enemies' => []], wat te move will hit
+      //    'target_mode' => 'single'/'all' if it will hit all of the targets or one
+      // ]
 
       if($entityType == 'heroes')
       {
          $allies = $encounter['heroes'];
-         $allieIds = array_map(fn($hero) => $hero['instance_id'], $encounter['heroes']);
          $enemies = $encounter['monsters'];
-         $enemieIds = array_map(fn($monster) => $monster['instance_id'], $encounter['monsters']);
+         $allieIds = array_map(fn($entity) => $entity['instance_id'], $allies);
+         $enemieIds = array_map(fn($entity) => $entity['instance_id'], $enemies);
       }
-      if($entityType == 'monsters')
+      elseif($entityType == 'monsters')
       {
          $allies = $encounter['monsters'];
-         $allieIds = array_map(fn($monster) => $monster['instance_id'], $encounter['monsters']); 
          $enemies = $encounter['heroes'];
-         $enemieIds = array_map(fn($hero) => $hero['instance_id'], $encounter['heroes']);
+         $allieIds = array_map(fn($entity) => $entity['instance_id'], $allies);
+         $enemieIds = array_map(fn($entity) => $entity['instance_id'], $enemies);
       }
-
-      $moveTarget = array_filter($entity['moves'], fn($move) => $move['move_name'] === $entity['selected_move']);
-      $moveTarget = array_first($moveTarget)['target'];
+      else
+      {throw new Exception('entity type must be heroes or monsters');}
+      
+      $move = array_filter($entity['moves'], fn($move) => $move['move_id'] === $entity['selected_move']);
+      $moveTarget = array_first($move)['target'];
       $entityKey = $entity['instance_id']; 
+
+      $selectable = $encounter[$entityType][$entityKey]['targets'];
 
       switch ($moveTarget) 
       {
          case 'self':
          {
-            $selectable = ['allies' => [$entityKey], 'enemies' => [], 'all_target' => true];
+            $selectable['selectable']['allies'] = [$entityKey];
+            $selectable['selectable']['enemies'] = [];
+            $selectable['target_mode'] = 'single';
             break;
          }
          case 'ally':
          {
             $selectableAllies = array_filter($allies, fn($ally) => $ally['instance_id'] != $entityKey);
             $selectableIds = array_map(fn($hero) => $hero['instance_id'], $selectableAllies);
-            $selectable = ['allies' => [$selectableIds], 'enemies' => [], 'all_target' => false];
+            
+            $selectable['selectable']['allies'] = $selectableIds;
+            $selectable['target_mode'] = 'single';
             break;
          }
          case 'enemy':
          {
-            $selectable = ['allies' => [], 'enemies' => $enemieIds, 'all_target' => false];
+            $selectable['selectable']['enemies'] = $enemieIds;
+            $selectable['target_mode'] = 'single';
             break;
          }
          case 'allies':
          {
             $selectableAllies = array_filter($allies, fn($ally) => $ally['instance_id'] != $entityKey);
             $selectableIds = array_map(fn($hero) => $hero['instance_id'], $selectableAllies);
-            $selectable = ['allies' => [$selectableIds], 'enemies' => [], 'all_target' => true];
+
+            $selectable['selectable']['allies'] = $selectableIds;
+            $selectable['target_mode'] = 'all';
             break;
          }
          case 'self_or_ally':
          {
-            $selectable = ['allies' => $allieIds, 'enemies' => [], 'all_target' => false];
+            $selectable['selectable']['allies'] = $allieIds;
+            $selectable['target_mode'] = 'single';
             break;
          }
          case 'self_and_ally':
          {
-            $selectable = ['allies' => $allieIds, 'enemies' => [], 'all_target' => true];
+            $selectable['selectable']['allies'] = $allieIds;
+            $selectable['target_mode'] = 'all';
             break;
          }
          case 'self_or_ally_or_enemy':
          {
-            $selectable = ['allies' => $allieIds, 'enemies' => $enemieIds, 'all_target' => false];
+            $selectable['selectable']['allies'] = $allieIds;
+            $selectable['selectable']['enemies'] = $enemieIds;
+            $selectable['target_mode'] = 'single';
             break;
          }
          case 'enemies':
          {
-            $selectable = ['allies' => [], 'enemies' => $enemieIds, 'all_target' => true];
+            $selectable['selectable']['enemies'] = $enemieIds;
+            $selectable['target_mode'] = 'all';
             break;
          }
          case 'all_except_self':
          {
             $selectableAllies = array_filter($allies, fn($ally) => $ally['instance_id'] != $entityKey);
-            $selectable = ['allies' => [$selectableAllies], 'enemies' => $enemieIds, 'all_target' => true];
+
+            $selectable['selectable']['allies'] = $selectableAllies;
+            $selectable['selectable']['enemies'] = $enemieIds;
+            $selectable['target_mode'] = 'all';
             break;
          }
          case 'all':
          {
-            $selectable = ['allies' => [$allieIds], 'enemies' => $enemieIds, 'all_target' => true];
+            $selectable['selectable']['allies'] = $allieIds;
+            $selectable['selectable']['enemies'] = $enemieIds;
+            $selectable['target_mode'] = 'all';
             break;
          }
          default:
          {
-            $selectable = ['allies' => [], 'enemies' => [], 'all_target' => null];
+            throw new Exception('Unknown move target: {$moveTarget}');
          }
       }
-      
-      $encounter[$entityType][$entityKey]['target'] = $selectable;
 
-      return $encounter;
+      return $selectable;
    }
 
-   private function processHeroSelect(array $encounter, array &$coordinates) 
+   private function selectNextHero(array $encounter, int $currentHeroKey)
    {
-      $hero = array_filter($encounter['heroes'], fn($hero) => $hero['selected_hero'] == true)[0];
-      $heroKey = $hero['instance_id'];
-      $index = $coordinates['y'] * 2 + $coordinates['x'];
-      $targetSlected = null;
-      $hover = array_pad($this->getHeroOptions($hero), 4, null)[$index];
+      if($currentHeroKey >= 0)
+      {$encounter['heroes'][$currentHeroKey]['selected_hero'] = false;}
+      
+      for ($heroKey = ($currentHeroKey + 1); $heroKey < count($encounter['heroes']); $heroKey++ ) 
+      {
+         $hero = $encounter['heroes'][$heroKey];
 
+         // dead heroes automatically skip their turn.
+         if ($hero['current_stats']['hp'] <= 0) 
+         {
+            $encounter['heroes'][$heroKey]['selected_action'] = 'Skip';
+            $encounter['heroes'][$heroKey]['selected_move'] = null;
+            $encounter['heroes'][$heroKey]['selected_hero'] = false;
+
+            continue;
+         }
+  
+         $encounter['heroes'][$heroKey]['selected_hero'] = true;
+         
+         return $encounter;
+      }
+  
+      $encounter['phase'] = 'monster_actions';
+      $encounter['turn']++;
+  
+      return $encounter;
+  }
+
+   private function processHeroEnter(array $encounter, array &$coordinates) 
+   {
+      $hero = array_first(array_filter($encounter['heroes'], fn($hero) => $hero['selected_hero'] == true));
+      $heroKey = $hero['instance_id'];
+      $targets = $hero['targets'];
+      
+      // target menu
+      if(in_array($targets['target_mode'], ['single', 'all'], true)) // if a move is slected
+      {
+         if($targets['target_mode'] === 'single') // if the move only targets one
+         {
+            $selectedTarget = [$targets['selectable']['enemies'], $targets['selectable']['allies']];
+            $targetId = $selectedTarget[$coordinates['y']][$coordinates['x']]; // choose one entity
+
+            if($coordinates['y'] == 0) // monsters
+            {
+               $encounter['heroes'][$heroKey]['targets']['selected']['enemies'] = [$targetId];
+            }
+            if($coordinates['y'] == 1) // heroes
+            {
+               $encounter['heroes'][$heroKey]['targets']['selected']['allies'] = [$targetId];
+            }
+            
+         }
+         else // if move is multi target confirm the entitie group
+         {
+            $encounter['heroes'][$heroKey]['targets']['selected']['enemies'] = $targets['selectable']['enemies'];
+            $encounter['heroes'][$heroKey]['targets']['selected']['allies'] = $targets['selectable']['allies'];
+         }
+
+         return $encounter;
+      }
+
+      $options = $this->getHeroOptions($hero);
+      $index = $coordinates['y'] * 2 + $coordinates['x'];
+      $hoverKey = array_keys($options)[$index] ?? null;
+      $hoverValue = array_values($options)[$index] ?? null;
       // Attack, Magic, Run, Skip are actions 
       // options are wat the hero can slect now and they can be actions/moves
 
-      if($hero['current_stats']['hp'] <= 0) // hero dead
-      {$hover = 'Skip';}
-      
-      if($hover !== null) 
+      if($hoverKey === null || $hoverValue === null) 
       {
-         if($hero['target']['all_target'] !== null)
-         {
-            $targetes = $hero['target'];
-            $options = [$targetes['enemies'], $targetes['allies']];
-
-            if($targetes['all_target'] === false)
-            {
-               $options = $options;
-               $target = $options[$coordinates['y']][$coordinates['x']]; 
-
-               if($coordinates['y'] == 0) // monsters
-               {
-                  $encounter['heroes'][$heroKey]['target']['enemies'] = [$target];
-                  $encounter['heroes'][$heroKey]['target']['allies'] = [];
-               }
-               if($coordinates['y'] == 1) // heroes
-               {
-                  $encounter['heroes'][$heroKey]['target']['allies'] = [$target];
-                  $encounter['heroes'][$heroKey]['target']['enemies'] = [];
-               }
-               
-            }
-
-            $targetSlected = true;
-         }
-         elseif (in_array($hero['selected_action'], ['Attack', 'Magic'], true)) // if attack or magic action is alredy selected
-         {
-            $move = array_filter($hero['moves'], fn($move) => $move['move_name'] == $hover);
-            $move = array_first($move);
-            $cost = $move['cost'];
-            $usable = false;
-
-            // check if the hero can use the move
-            if($hero['selected_action'] == 'Attack' && $cost < $hero['current_stats']['hp'])
-            {$usable = true;}
-            else if($hero['selected_action'] == 'Magic' && $hero['current_stats']['mp'] > 0)
-            {$usable = true;}
-
-            if($usable)
-            {
-               $encounter['heroes'][$heroKey]['selected_move'] = $hover; // select the move that is hovered
-            }
-
-         } 
-         elseif(in_array($hover, ['Attack', 'Magic', 'Run', 'Skip'], true)) // if no action is slected selected
-         {
-            $encounter['heroes'][$heroKey]['selected_action'] = $hover; // select the action that is hovered
-            $encounter['heroes'][$heroKey]['selected_move'] = null;
-         }
-
-         if($hover == 'Run')
-         {
-            $encounter['heroes'] = array_map(fn (array $hero) => [...$hero, 'selected_action' => 'Run'],$encounter['heroes']);
-         }
-
-         if(in_array($hover, ['Run', 'Skip'], true) || $targetSlected) // if the hero has select slected a action/move 
-         {
-            if(isset($encounter['heroes'][$heroKey + 1])) // if there is a hero that has not sleceted a action/move
-            {
-               $encounter['heroes'][$heroKey]['selected_hero'] = false;
-               $encounter['heroes'][$heroKey + 1]['selected_hero'] = true; // change the slected hero
-
-               $encounter = $this->processHeroSelect($encounter, $coordinates);
-            }
-            else // alle the heroes have slected a action/move 
-            {
-               $encounter['phase'] = 'monster_actions'; // progres the phase
-               $encounter['turn'] += 1;
-            }
-         }
-      }
-      else
-      {
-         $coordinates['x'] = 0;
-         $coordinates['y'] = 0;
+         $coordinates = ['x' => 0, 'y' => 0];
+         return $encounter;
       }
 
-      return $encounter;
+      // move menu
+      if (in_array($hero['selected_action'], ['Attack', 'Magic'], true)) // if attack or magic action is alredy selected
+      {
+         $move = array_filter($hero['moves'], fn($move) => $move['move_id'] == $hoverKey);
+         $move = array_first($move);
+         $cost = $move['cost'];
+         $usable = false;
+
+         // check if the hero can use the move
+         if($hero['selected_action'] == 'Attack')
+         {
+            if($cost < $hero['current_stats']['hp'])
+            {$usable = true;}
+            else 
+            {
+               $this->dialogue = $this->MService->processDialogue(['type' => 'encounter' ,'id' => 'insufficient'], ['type' => 'HP' ,'move' => $move['move_name']]);
+            }
+         }
+         else if($hero['selected_action'] == 'Magic')
+         {
+            if($hero['current_stats']['mp'] > 0)
+            {$usable = true;}
+            else
+            {
+               $this->dialogue = $this->MService->processDialogue(['type' => 'encounter' ,'id' => 'insufficient'],  ['type' => 'MP' ,'move' => $move['move_name']]);
+            }
+            
+         }
+
+         if($usable)
+         {
+            $encounter['heroes'][$heroKey]['selected_move'] = $hoverKey; // select the move that is hovered
+            $this->dialogue = $this->MService->processDialogue(['type' => 'encounter' ,'id' => 'select_target'], ['move' => $move['move_name']]);
+         }
+
+         return $encounter;
+      } 
+      // action menu
+      elseif(in_array($hoverValue, ['Attack', 'Magic', 'Run', 'Skip'], true)) // if no action is slected selected
+      {
+         $encounter['heroes'][$heroKey]['selected_action'] = $hoverValue; // select the action that is hovered
+         $encounter['heroes'][$heroKey]['selected_move'] = null;
+         $coordinates = ['x' => 0, 'y' => 0];
+
+         if($hoverValue == 'Run')
+         {
+            $encounter['heroes'] = array_map(fn (array $hero) => [...$hero, 'selected_action' => 'Run'], $encounter['heroes']);
+         }
+
+         if(in_array($hoverValue, ['Attack', 'Magic'], true))
+         {
+            $this->dialogue = $this->MService->processDialogue(['type' => 'encounter' ,'id' => 'select_move'], ['type' => $hoverValue]);
+         }
+
+         return $encounter;
+      }
+
+      throw new Exception('not a valid state');
+   }
+
+   private function encounterPhaseChange(array $encounter)
+   {
+      $encounter['monsters'] = $this->processMonsterAi($encounter['monsters']);
    }
 
    private function processMonsterAi(array $monsters)
    {
+      dd($monsters);
       foreach($monsters as &$monster)
       {
          $ai = json_decode($monster['ai'], true);
 
-         dd($monster);
+         
       }
 
       return $monsters;

@@ -45,13 +45,13 @@ class GameController extends Controller
       );
    }
 
-   public function index(Request $request)
+   public function dispatchInput(Request $request)
    {
       $validated = $request->validate([
          'direction' =>
          [
             'required_if:action,move',
-            'in:left,right,up,down,enter',
+            'in:left,right,up,down,enter,back',
          ],
       ]);
 
@@ -61,7 +61,8 @@ class GameController extends Controller
          'right' => ['x' => 1, 'y' => 0],
          'up'    => ['x' => 0, 'y' => -1],
          'down'  => ['x' => 0, 'y' => 1],
-         'enter' => ['x' => 0, 'y' => 0]
+         'enter' => ['x' => 0, 'y' => 0],
+         'back' => ['x' => -1, 'y' => -1]
       ];
 
       $offset = $offsets[$validated['direction']];
@@ -73,17 +74,17 @@ class GameController extends Controller
       if($gameState == "map")
       {
          $mapService = new MapService();
-         $output = $mapService->index($offset);
+         $output = $mapService->handleInput($offset);
       }
       else if($gameState == "encounter")
       {
          $encounterService = new EncounterService();
-         $output = $encounterService->index($offset);
+         $output = $encounterService->handleInput($offset);
       }
       else if($gameState == "menu")
       {
          $menuService = new MenuService();
-         $output = $menuService->index($offset);
+         $output = $menuService->handleInput($offset);
       }
       
       return $output;
