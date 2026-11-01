@@ -24,12 +24,40 @@ class RegisterController extends Controller
       $user = User::create($credentials);
 
       DB::table('players')->insert([
-         'map_id' => 1,
+         'map_id' => $user->id,
          'user_id' => $user->id,
          'gold' => 20,
          'x' => 17,
          'y' => 8,
       ]);
+
+      // DB::table('saved_heroes')->insert(
+      // [
+      //   'id' => 1,
+      //   'player_id' => 1,
+      //   'hero_stat_point_id' => 3,
+      //   'model_hero_id' => 1,
+      //   'level' => 1,
+      //   'xp' => 0
+      // ]); 
+
+      // DB::table('move_saved_heroes')->insert(
+      // [
+      //   [
+      //    'id' => 1,
+      //    'move_id' => 15,
+      //    'saved_heroes_id' => 1,
+      //    'slot' => 1,
+      //    'source' => 'level'
+      //   ],
+      //   [
+      //    'id' => 2,
+      //    'move_id' => 18,
+      //    'saved_heroes_id' => 1,
+      //    'slot' => 2,
+      //    'source' => 'level'
+      //   ]
+      // ]);
 
       Auth::login($user);
 

@@ -611,11 +611,50 @@ class EncounterService
       return [$encounter, $coordinates];
    }
 
-   private function processHeroBack(array $encounter, array $coordinates)
+   private function processHeroBack(array $encounter, array &$coordinates)
    {
-      dd('test');
+      $hero = array_first(array_filter($encounter['heroes'], fn($hero) => $hero['selected_hero'] == true));
+      $heroKey = $hero['instance_id'];
+      $targets = $hero['targets'];
+      $coordinates = ['x' => 0, 'y' => 0];
 
-      return $encounter;
+      if(in_array($targets['target_mode'], ['single', 'all'], true))
+      {
+         $encounter['heroes'][$heroKey]['targets']['selectable']['enemies'] = [];
+         $encounter['heroes'][$heroKey]['targets']['selectable']['allies'] = [];
+         $encounter['heroes'][$heroKey]['targets']['target_mode'] = null;
+         $encounter['heroes'][$heroKey]['selected_move'] = null;
+
+         $this->dialogue = $this->MService->processDialogue(['type' => 'encounter' ,'id' => 'select_move'], ['type' => $hero['selected_action']]);
+         return $encounter;
+      }
+      elseif (in_array($hero['selected_action'], ['Attack', 'Magic'], true))
+      {
+         $encounter['heroes'][$heroKey]['selected_action'] = null;
+
+         $this->dialogue = $this->MService->processDialogue(['type' => 'encounter' ,'id' => 'select_action']);
+         return $encounter;
+      }
+
+      if($heroKey == 0)
+      {return $encounter;}
+
+      for ($lastHeroKey = ($heroKey - 1); $lastHeroKey <= 0; $lastHeroKey--) 
+      {
+         $lastHero = $encounter['heroes'][$lastHeroKey];
+
+         if ($lastHero['current_stats']['hp'] <= 0) 
+         {continue;}
+  
+         $encounter['heroes'][$lastHeroKey]['selected_hero'] = true;
+         $encounter['heroes'][$lastHeroKey]['selected_move'] = null;
+         $encounter['heroes'][$lastHeroKey]['selected_action'] = null; 
+         $encounter['heroes'][$lastHeroKey]['targets']['selected']['enemies'] = [];
+         $encounter['heroes'][$lastHeroKey]['targets']['selected']['allies'] = [];
+         
+         return $encounter;
+      }
+
    }
    
    private function processTargeting(array $entity, string $entityType, array $encounter)
@@ -871,17 +910,27 @@ class EncounterService
 
    private function encounterPhaseChange(array $encounter)
    {
-      $encounter['monsters'] = $this->processMonsterAi($encounter['monsters']);
+      $phase = $encounter['phase'];
+      if($phase == 'hero_actions')
+      {
+
+      }
+      if($phase == 'monster_actions')
+      {
+         $encounter['monsters'] = $this->processMonsterAi($encounter['monsters']);
+      }
+      
+      return $encounter;
    }
 
    private function processMonsterAi(array $monsters)
    {
-      dd($monsters);
+
       foreach($monsters as &$monster)
       {
          $ai = json_decode($monster['ai'], true);
 
-         
+         dd($monster);
       }
 
       return $monsters;

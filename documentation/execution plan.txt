@@ -3,3 +3,10 @@ the execution plan
 ways to start developing the game
 
 harmony of cues
+
+encounter
+
+1 hero slect: done
+
+2 monster slect:
+
