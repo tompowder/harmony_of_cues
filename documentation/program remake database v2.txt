@@ -601,7 +601,7 @@ Provide an Affinity
 Provide a Move
 
 Example:
-Flame Sword
+Inferno Blade
 
 Type: Weapon
 Attack: +5

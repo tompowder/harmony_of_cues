@@ -11,7 +11,8 @@ return new class extends Migration
     */
    public function up(): void
    {
-      Schema::create('model_monsters', function (Blueprint $table) {
+      Schema::create('model_monsters', function (Blueprint $table) 
+      {
          $table->id();
          $table->foreignId('entity_id')->unique()->constrained('entities');
          $table->unsignedInteger('gold_drop');

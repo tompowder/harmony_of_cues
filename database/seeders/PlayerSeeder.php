@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\DB;
 
 class PlayerSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
-    {
+   /**
+    * Run the database seeds.
+    */
+   public function run(): void
+   {
       DB::table('players')->insert([
          'id' => 1,
          'map_id' => 1, // alpha
@@ -21,5 +21,5 @@ class PlayerSeeder extends Seeder
          'x' => 17,
          'y' => 8,
       ]);
-    }
+   }
 }

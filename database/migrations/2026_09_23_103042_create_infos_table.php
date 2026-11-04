@@ -11,17 +11,20 @@ return new class extends Migration
     */
    public function up(): void
    {
-      Schema::create('infos', function (Blueprint $table) {
+      Schema::create('infos', function (Blueprint $table) 
+      {
          $table->id();
 
-         $table->enum('info_type', [
+         $table->enum('info_type', 
+         [
             'monster',
             'boss',
             'synergy',
             'other',
          ]);
 
-         $table->enum('info_condition', [
+         $table->enum('info_condition', 
+         [
             'wild',
             'pristine',
          ]);

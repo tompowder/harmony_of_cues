@@ -11,14 +11,16 @@ return new class extends Migration
     */
    public function up(): void
    {
-      Schema::create('shop_equipment', function (Blueprint $table) {
+      Schema::create('shop_equipment', function (Blueprint $table) 
+      {
          $table->id();
          $table->foreignId('shop_point_id')->constrained('shop_points');
          $table->foreignId('equipment_id')->constrained('equipment');
          $table->unsignedInteger('price');
          $table->timestamps();
 
-         $table->unique([
+         $table->unique(
+         [
             'shop_point_id',
             'equipment_id',
          ]);

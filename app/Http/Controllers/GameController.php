@@ -8,6 +8,7 @@ use App\Services\EncounterService;
 use App\Services\MenuService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Exception;
 
 class GameController extends Controller
 {
@@ -47,7 +48,8 @@ class GameController extends Controller
 
    public function dispatchInput(Request $request)
    {
-      $validated = $request->validate([
+      $validated = $request->validate(
+      [
          'direction' =>
          [
             'required_if:action,move',
@@ -86,6 +88,8 @@ class GameController extends Controller
          $menuService = new MenuService();
          $output = $menuService->handleInput($offset);
       }
+      else
+      {throw new Exception('infaled game state');}
       
       return $output;
    }

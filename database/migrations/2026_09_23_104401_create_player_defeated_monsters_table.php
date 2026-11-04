@@ -11,13 +11,15 @@ return new class extends Migration
     */
    public function up(): void
    {
-      Schema::create('player_defeated_monsters', function (Blueprint $table) {
+      Schema::create('player_defeated_monsters', function (Blueprint $table) 
+      {
          $table->id();
          $table->foreignId('player_id')->constrained('players');
          $table->foreignId('model_monster_id')->constrained('model_monsters');
          $table->timestamps();
 
-         $table->unique([
+         $table->unique(
+         [
             'player_id',
             'model_monster_id',
          ]);

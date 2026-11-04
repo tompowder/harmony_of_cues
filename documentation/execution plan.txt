@@ -1,12 +1,329 @@
 the execution plan
 
-ways to start developing the game
-
 harmony of cues
 
-encounter
+D = Done
+W = Working on
+Empty = Not started
 
-1 hero slect: done
+1 Accounts
 
-2 monster slect:
+1.1 user acount
+D Seed a test user into the database.
+D be able to login.
+D Redirect successfully authenticated users to the game page.
 
+D Create a registration form. 
+D be able to create a acount 
+D Validate name, email and password. 
+D Store the user in the database. 
+  create starter data for the new account
+  Save the starting state to the database.
+D Load the starting map.
+D Redirect the player to the game.
+
+D Implement logout.
+  Handle unauthenticated access to the game.
+
+1.2 admin acount
+  Implement admin authentication and access restrictions.
+  Create an admin dashboard.
+  Allow admins to search for user accounts.
+  Allow admins to view and modify user accounts.
+  Define which game content admins can create, edit and delete.
+  Implement game content management.
+  (need to workout wat exactly the admin can do)
+
+2 Backend Structure
+
+2.1 GameController
+D Create the main GameController.
+D Receive requests from JavaScript.
+D Validate incoming request data.
+D Retrieve the current gameState from the session.
+D Dispatch requests to the correct service.
+D Return the service response to the frontend.
+D Handle invalid requests and errors.
+
+2.2 Services
+D Create MapService.
+D Create EncounterService.
+D Create MenuService.
+D Create SaveService.
+W Implement communication between services.
+W Ensure services return the required data to GameController.
+
+2.3 Frontend Communication
+D Implement JavaScript requests to Laravel without refreshing the page.
+D Receive responses from the backend.
+D Update the map using returned data.
+  Handle loading states and errors.
+D Update the frontend when the gameState changes.
+
+2.4 load the game
+D Load the map.
+D Load the player's saved game data.
+  Load required heroes.
+  Calculate hero stats.
+D Set the initial gameState to Map.
+
+3 map
+
+3.1 load the map
+D get the map data from the database
+  Load points of interest.
+D Render the player at the correct coordinates.
+D Implement the required monospace font.
+
+3.2 processes player input
+D Implement player movement.
+D Prevent movement through walls and solid points.
+D Detect when the player activates a point.
+D Redirect point interactions to the correct service.
+D Implement Enter to activate the current tile without moving.
+D Update the player's coordinates in the session.
+
+3.3 info point
+  Load the associated Wild Information.
+  Display Wild Information to the player.
+  Save discovered information in the player's session.
+
+3.4 save point
+  Display the Save Point menu.
+  Restore HP and MP for all heroes in the current party.
+  Implement Save and Continue.
+  Implement Save and Quit.
+  Implement Exit.
+
+3.5 Transition Points
+  Implement the default > transition to another map.
+  Implement the < transition to the most recently visited map
+
+
+3.6 Recruitment Points
+  Display the recruitment menu.
+  Load the available recruitable hero.
+  make a conditions reader
+  
+  Implement recruitment.
+  Copy the hero from model_hero into the player's saved_hero data.
+  Remove the Recruitment Point after successful recruitment.
+
+3.7 boss point
+start the boss encounter
+prevent Run during a boss encounter
+remove the boss point after the boss is defeated
+Mark the defeated bosses in the player's session
+Ensure defeated boss points do not reapear
+
+3.8 Map Persistence
+D Store the player's current map in the session.
+D Store the player's current X and Y coordinates in the session.
+D Restore the player's location when loading the game.
+
+4 encounter
+
+4.1 load the encounter
+D Load encounter data from the database.
+D Implement random encounter selection.
+  Implement random encounter can be empty
+  
+D Load the monsters data to the selected encounter.
+  Load monster abilities.
+D Load monster moves.
+D Load monster equipment.
+D Display the encounter screen.
+
+4.2 hero slect
+D Implement action selection.
+D Implement Attack and Magic actions.
+D Implement HP and MP costs for moves.
+D Implement HP and MP consumption when executing moves.
+D Implement hero selection order from left to right.
+D Implement move selection.
+D Implement move targeting.
+D Implement undo action. (backspace)
+D Automatically assign Skip to defeated heroes.
+
+4.3 monster slect
+W Implement monster AI reader.
+  Implement random move selection.
+  Implement conditional move selection.
+  Implement HP and MP consumption when executing moves.
+  Implement monster targeting.
+  Implement monster action order from left to right.
+  
+  Implement boss phase changes.
+  Implement boss AI behavior.
+  Implement boss reactions to player actions.
+
+4.4 processes/calculate the turn
+  Implement changinge encounter phase logic
+  Implement Run calculations.
+  Implement Skip actions.
+  Prevent running from boss encounters.
+  
+  Implement damage calculations.
+  Implement Defense calculations.
+  Implement affinity calculations.
+  
+  Implement move effect reader
+  Implement ability effect reader
+  Implement ability events hooks
+  
+  Implement synergy detection.
+  Implement synergy participant checks.
+  Implement synergy calculations.
+  Implement synergy execution.
+  
+  Implement move execution. (dialogue box)
+
+
+4.5 encounter Completion
+  Detect encounter victory and defeat.
+  Process encounter rewards.
+  Calculate XP and Gold rewards.
+  Check equipment drops.
+  Calculate weapon and armor drop chances.
+  Display equipment drops.
+  Return the player to the appropriate screen.
+
+5 Hero Progression
+
+5.1 Leveling
+  Implement XP requirements for leveling up.
+  Check whether heroes can level up.
+  Increase hero levels.
+  Check whether heroes learn new moves.
+  Restore HP and MP after leveling up.
+  Handle multiple level-ups.
+
+5.2 Stat Points
+  Display Stat Point selection.
+  Allow the player to select a stat.
+  Implement increases to HP, MP, Attack, Magic and Defense.
+
+5.3 Move Learning and Replacement
+  Implement permanent move learning.
+  Enforce the four-permanent-move limit using move slots.
+  Implement the permanent move replacement menu.
+  Display move information during replacement.
+  Prevent temporary weapon moves from being replaced.
+
+6 Equipment System
+
+6.1 Equipment
+D Implement weapons and armor.
+D Implement equipment stat bonuses.
+  Implement equipment abilities and affinities.
+  Implement temporary weapon moves.
+
+6.2 Equip equipment
+  have a buton to open inventory menu.
+  show wat equipment is used by wat hero 
+  Implement equipping and unequipping.
+  Display equipment comparisons.
+
+7 Shop System
+
+7.1 Shop Menu
+  Display the Shop menu.
+  Implement Gear, Moves, Info and Exit.
+  Implement menu navigation.
+  Return to the map when the shop closes.
+
+7.2 Shop Gear
+  Implement hero selection.
+  Display available equipment.
+  Display equipment information.
+  Display equipment comparisons.
+  Implement equipment purchases.
+  Check available Gold.
+  Handle weapon-provided moves.
+  make it so when a player decline to learning a weapon move to cancelling the purchase.
+
+7.3 Shop Moves
+  Implement hero selection.
+  Display available moves.
+  Display move information.
+  Implement move purchases.
+  Check available Gold.
+  Add a move replacement menu.
+
+7.4 Shop Information
+  Implement the Info menu.
+  Implement Monster Information.
+  Implement Synergy Information.
+  Implement Other Information.
+  Display purchased information without charging again.
+  Enforce monster defeat requirements for monster information.
+  Save purchased information permanently.
+
+8 Information System
+
+8.1 Wild Information
+  Save discovered information.
+  Make discovered information available through Shop Info.
+
+8.2 Pristine Information
+  Implement monster and boss information.
+  Implement synergy information.
+  Implement other information.
+  Implement permanent information ownership.
+
+9 Saving and Loading
+
+9.1 saving
+  Implement player data saving.
+  Save current map and coordinates.
+  Save hero progression, stats and moves.
+  Save equipment ownership and equipped equipment.
+  Save inventory.
+  Save Gold.
+  Save recruited heroes.
+  Save defeated bosses.
+  Save discovered and purchased information.
+
+9.2 Loading Player Data
+D Load player data after login.
+D Restore the player's map and coordinates.
+D Restore heroes and their progression.
+D Restore equipment and inventory.
+D Restore Gold.
+  Restore recruited heroes.
+  Restore defeated bosses.
+  Restore discovered and purchased information
+
+9.3 Save Point Integration
+  Implement Save and Continue.
+  Implement Save and Quit.
+  Implement Exit without saving.
+  Restore HP and MP when activating a Save Point.
+
+10. Dialogue and Feedback
+
+10.1 Dialogue Box
+D Create the dialogue box below the hero display.
+D Implement dynamic dialogue messages.
+D Display combat feedback.
+  Display menu feedback.
+  Display movement and interaction feedback.
+  Display error messages.
+  Display rewards and leveling messages.
+
+10.2 Messages
+D Encounter started.
+D Action and move selection.
+D Insufficient HP and MP.
+  Successful and failed escape.
+  Synergy activated.
+  Move used and damage dealt.
+  Affinity advantage and disadvantage.
+  Enemy defeated.
+  Encounter victory and defeat.
+  Equipment dropped and purchased.
+  Gold and XP gained.
+  Level up.
+  Move learned and forgotten.
+  Hero recruited.
+  Information discovered.

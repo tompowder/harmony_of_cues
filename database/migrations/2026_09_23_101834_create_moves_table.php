@@ -11,12 +11,14 @@ return new class extends Migration
     */
    public function up(): void
    {
-      Schema::create('moves', function (Blueprint $table) {
+      Schema::create('moves', function (Blueprint $table) 
+      {
          $table->id();
          $table->foreignId('affinity_id')->constrained('affinities');
          $table->string('name');
 
-         $table->enum('type', [
+         $table->enum('type', 
+         [
             'attack',
             'magic',
             'piercing'
@@ -27,12 +29,21 @@ return new class extends Migration
          $table->string('description')->nullable();
          $table->unsignedInteger('cost');
 
-         $table->enum('target', [
+         $table->enum('category', 
+         [
+            'offense',
+            'defensive',
+            'balanced',
+            'support'
+         ]);
+
+         $table->enum('target', 
+         [
             'self',
             'ally',
             'allies',
             'self_or_ally',
-            'self_and_ally',
+            'self_and_allies',
             'self_or_ally_or_enemy',
             'enemy',
             'enemies',

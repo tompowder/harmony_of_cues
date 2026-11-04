@@ -11,7 +11,8 @@ return new class extends Migration
     */
    public function up(): void
    {
-      Schema::create('level_schemas', function (Blueprint $table) {
+      Schema::create('level_schemas', function (Blueprint $table) 
+      {
          $table->id();
          $table->unsignedInteger('max_hp');
          $table->unsignedInteger('max_mp');

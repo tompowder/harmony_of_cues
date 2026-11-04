@@ -11,10 +11,11 @@ return new class extends Migration
     */
    public function up(): void
    {
-      Schema::create('synergies', function (Blueprint $table) {
+      Schema::create('synergies', function (Blueprint $table) 
+      {
          $table->id();
          $table->foreignId('move_id')->constrained('moves');
-         $table->json('calculation');
+         $table->json('rules');
          $table->timestamps();
       });
    }

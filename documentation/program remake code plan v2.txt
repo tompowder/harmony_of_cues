@@ -13,36 +13,32 @@ This is important because the maps use ASCII characters and need to stay aligned
 The font should behave similarly to a monospace font, such as the font used by a basic text editor.
 
 
-2. Start Menu
+2. Starting the game
 
 When the game starts, the player sees:
 
--------------
-| continue* |
-| new game  |
--------------
+get a login/register screen
+the player can login
 
-The * shows which option is currently selected.
-The player can move the selection using the arrow keys and press Enter to select an option.
+login
 
-Continue
-
-If the player selects Continue:
+If the player logsin:
 Load the player's data from the player table.
 Load the player's current map.
 Load the player's current X and Y coordinates.
 Load the required map data and points.
 Continue the game from the saved location.
 
-New Game
+register
 
-If the player selects New Game:
-Ask the player for their name.
-Save the name in the player table.
-Load the hard-coded starting location.
+If the player selects register and create a new acount:
+Ask the player for their name, email and a password.
+Save the input data in the users table.
+Create a player linkt to the users.
+Load the hard-coded starting state.
+Save the starting state into the database.
 Load the starting map.
 Start the game.
-
 
 3. Loading a Map
 
@@ -55,7 +51,6 @@ Points of interest
 Player location
 Available encounters
 Required hero data
-Required monster data
 
 The ASCII map is rendered using the map.map_data field.
 Points of interest are loaded separately using the point tables.
@@ -77,6 +72,9 @@ Check whether the player has entered or interacted with a special point.
 
 The player's position is stored in the player table.
 
+The player can stand on encounter points (.).
+The player cannot stand on other special points.
+Entering a special point activates it without moving the player onto its tile.
 
 5. Walkable Tiles
 
@@ -103,11 +101,14 @@ When the player attempts to move onto a Save Point, the Save Point menu is opene
 ----------------------
 | hp and mp restored |
 |                    |
-| Save and continue  |
+|*Save and continue  |
 | Save and quit      |
 |                    |
 | Exit               |
 ----------------------
+
+The * shows which option is currently selected.
+The player can move the selection using the arrow keys and press Enter to select an option.
 
 When a Save Point is activated The hp and mp of all heroes in the current party is restored to maximum.
 
@@ -127,7 +128,7 @@ Update the player's saved hero data in the database.
 Update the player's equipment ownership and Inventory in the database.
 Update which equipment is currently equipped by each hero.
 Save all other required player progress.
-Return the player to the Start Menu.
+Return the player to the login page.
 
 Exit
 The player returns to the map and continues playing.
@@ -141,7 +142,7 @@ When the player attempts to move onto a Shop Point, the Shop menu is opened.
 ----------------
 |     SHOP     |
 |              |
-| Gear         |
+| Equipment    |
 | Moves        |
 | Info         |
 | Exit         |
@@ -149,17 +150,17 @@ When the player attempts to move onto a Shop Point, the Shop menu is opened.
 
 The player can select:
 
-Gear
+Equipment
 Moves
 Info
 Exit
 
 Selecting Exit closes the Shop and returns the player to the map.
-you can slect Gear, Move and Info
+you can slect Equipment, Move and Info
 
-7.1 Shop Gear
+7.1 Shop Equipment
 
-When the player selects Gear, the game first asks which hero should receive the equipment.
+When the player selects equipment, the game first asks which hero should receive the equipment.
 
 --------------
 | Hero 1     |
@@ -190,7 +191,7 @@ information is displayed next to the selection menu.
 |                      | | Ability: fire guard    |
 | Armor                | | reduced fire affinity  |
 | Leather Armor 10G    | | damage by 20%          |
-| Fire Charm Armor 20G*| |                        |
+|*Fire Charm Armor 20G | |                        |
 |                      | | hp      + 10           |
 | Back                 | | Defense + 10           |
 ------------------------ --------------------------
@@ -226,9 +227,9 @@ Apply the new equipment's stats, Ability, and Affinity.
 Add the new equipment's temporary move.
 
 if the hero has 4 moves and gets a wapon that has a move.
-the move replaser menu of 7.2 will be used but you 
-can back out of learning a new move from a weapon.
-but you cantsel buying the weapon
+the move replace menu of 7.2 will be used.
+When you back out of learning a new move from a weapon
+it will cancel the purchase.
 
 Weapon-provided moves are temporary.
 A weapon-provided move cannot be removed 
@@ -259,7 +260,7 @@ When the player highlights a move (*), its details are displayed next to the mov
 | Slashing 0 hp 2G | | type: magic              |
 |                  | | power: 1.5               |
 | Magic            | | cost: 5 mp               |
-| heal 5 mp 10G*   | | target: self or ally     |
+|*heal 5 mp 10G    | | target: self or ally     |
 |                  | | effect: heals the target |
 | Back             | ----------------------------
 -------------------- 
@@ -429,17 +430,17 @@ After purchasing information about Burning Grove:
 ---------------------------------
 | Burning Grove                 |
 |                               |
-| Description                   | 
-| fire monsters are common in   | 
-| this Forest                   | 
-| Water affinity is recommended | 
+| Description                   |
+| fire monsters are common in   |
+| this Forest                   |
+| Water affinity is recommended |
 | in the Burning Grove.         |
 |                               |
 | monster fond                  |
 | goblin                        |
-| fire slime                    |
+| Boiling slime                 |
 | Forest Wolf                   |
-| golden goblin                 | 
+| golden goblin                 |
 |                               |
 | Back                          |
 ---------------------------------
@@ -451,6 +452,15 @@ Other Information does not use the monster-defeat requirement
 Information point are represented by: I
 
 When the player attempts to move onto an Information Point, the Information Point is activated.
+
+When the player activates an Information Point:
+
+The game loads the associated Wild Information.
+The information is displayed to the player.
+The information is marked as discovered in the player's session.
+The discovered information is saved permanently at the next Save Point.
+
+If the information has already been discovered, it can be displayed again without being recorded as new information.
 
 Information Points provide Wild Information.
 
@@ -514,8 +524,8 @@ transition point are represented by: < or >
 
 when the player gose to the transition point they wil be send to an other map
 
-> is used to go to a map you have not bin to
-< is for a map you have bin to
+> is the default symbol and represents a transition to another map.
+< represents the transition back to the map the player most recently visited before entering the current map.
 
 11. Boss point 
 
@@ -530,7 +540,9 @@ Potentially additional monsters, if defined by the boss encounter
 Boss encounters cannot be escaped using Run.
 If the player selects Run during a boss encounter, Run is unavailable.
 
-After the boss is defeated, the Boss Point is removed and marked as defeated in the database
+After the boss is defeated, the Boss Point is removed and marked as 
+defeated in the session and later saved into the database.
+and will not reapear when the map is reloaded
 
 12. Encounter Points
 
@@ -582,6 +594,8 @@ If the generated number is 26, the player encounters a Red Slime.
 If the generated number is 88, the player encounters two Forest Wolves.
 If the generated number is 93, no encounter occurs.
 
+If the selected encounter is No Encounter, no combat is started. 
+The player remains on the map and can continue exploring.
 
 14. Loading an Encounter
 
@@ -641,7 +655,8 @@ For example:
 
 Hero 1 → Hero 2 → Hero 3 → Hero 4
 
-Each hero can select:
+Attack, Magic, Run, Skip are actions 
+Each hero can select a action:
 
 Attack
 Magic
@@ -651,9 +666,9 @@ Skip
 
 17. Run
 
-Run can only be selected by the first hero.
 If the player selects Run:
 
+Change the heroes that have already selected a move/action to run
 Stop asking the remaining heroes for actions.
 Attempt to escape from the encounter.
 If successful, the encounter ends.
@@ -684,12 +699,12 @@ The hero performs no move.
 The game moves to the next hero.
 Skip can potentially be used as part of a synergy.
 
-A hero with 0 HP automatically uses Skip unless an ability allows the hero to act.
+A hero with 0 HP automatically uses Skip unless an ability allows the hero to use a action.
 
 
 19. Attack and Magic
 
-If the player selects Attack, the game displays the hero's attack moves.
+If the player selects Attack action, the game displays the hero's attack moves.
 
 Only moves where:
 
@@ -697,7 +712,7 @@ move.type = attack
 
 are displayed.
 
-If the player selects Magic, the game displays the hero's magic moves.
+If the player selects Magic action, the game displays the hero's magic moves.
 
 Only moves where:
 
@@ -706,6 +721,7 @@ move.type = magic
 are displayed.
 
 After selecting a move, the player selects its target if the move requires targeting.
+if the move does not require targeting its shown wat entities are effect by the move and asks for confirmation
 
 
 20. Moves
@@ -714,7 +730,7 @@ Moves can:
 
 Deal damage
 Heal
-Negate damage
+Reduce damage taken
 Interact with affinities
 Participate in synergies
 
@@ -725,10 +741,9 @@ Piercing
 
 Heroes and normal monsters can have a maximum of 4 moves.
 the four-move limit is shared between Attack and Magic moves
+Piercing moves cannot be learnd by entities and are only used by abilities
 
 Bosses can have more than 4 moves.
-
-Piercing moves cannot be learnd by entities and are only used by abilities
 
 21. Attack Moves
 
@@ -752,7 +767,6 @@ Power: 1.5
 Cost: 1 HP
 
 If an attack requires more HP than the entity can spend, the move cannot be used.
-
 
 22. Magic Moves
 
@@ -811,7 +825,7 @@ The move.effect field stores these effects.
 Example:
 
 {
-    "extra_type": "heal"
+   "effect": "healing"
 }
 
 This allows moves to perform actions other than simply dealing damage.
@@ -861,7 +875,7 @@ allies: Targets all allies except the entity using the move.
 
 self_or_ally: Targets either the entity using the move or one ally.
 
-self_and_ally: Targets the entity using the move and one ally.
+self_and_allies: Targets the entity using the move and its allies.
 
 self_or_ally_or_enemy: Can target any single entity in the encounter.
 
@@ -893,7 +907,11 @@ Shops
 Weapons
 
 Weapon moves are temporary.
+Weapon moves count towards the four-move limit.
+A weapon move cannot be removed through normal permanent move replacement.
+If equipping a weapon would exceed the move limit, the player must replace a permanent move.
 If the weapon is removed, the weapon-provided move is removed.
+The permanent move previously replaced does not return.
 
 
 28. Move Synergies
@@ -953,18 +971,17 @@ The exact JSON structure is still being designed.
 Abilities activate when specific events or conditions occur.
 The ability.effect field contains the rules for the ability.
 
-For example:
+For example: Self Necromancy
 
-{ 
-   "trigger": "defeated_skip", 
-   "effect": 
-   {
-      "use_move": 
-      {
-         "target": 
-         "random_enemy", "move_id": 15 
-      }
-   }
+{
+  "trigger": "defeated_skip",
+  "effect": [
+    {
+      "type": "use_move",
+      "target": "random_enemy",
+      "move_id": 13
+    }
+  ]
 }
 
 The exact list of triggers and effects is not finalized.
@@ -987,7 +1004,7 @@ Abilities can change how combat works.
 
 31. Equipment
 
-Equipment is stored in the gear table.
+Equipment is stored in the equipment table.
 
 There are two types:
 
@@ -1001,6 +1018,40 @@ For example:
 Attack +5
 Defense +3
 
+While on the map, the player can press C to open the Inventory menu.
+
+The player selects a hero.
+The player chooses which equipment slot to replace.
+The available equipment in the inventory is displayed.
+The player selects a piece of equipment.
+The player compares the currently equipped equipment with the new equipment.
+The player confirms or cancels the replacement.
+If confirmed, the new equipment is equipped and the old equipment is moved into the inventory.
+
+this is the same hero selection menu used in 7.1
+all heroes share the same inventory
+
+slecting wat type of equipment to change
+----------
+|*Weapon |
+| Armor  |
+|        |
+| Back   |
+----------
+
+equipment compared
+-------------------------------
+| Steel Armor -> Fire Armor   |
+|                             |
+| hp      5 -> 10             |
+| Defense 7 -> 10             |
+|                             |
+| Ability: none -> fire guard |
+| Affinity: Metal -> fire     |
+|                             |
+|*Confirm                     |
+| Back                        |
+-------------------------------
 
 32. Weapon
 
@@ -1013,7 +1064,8 @@ Affinity
 
 The current intended design is that weapons primarily provide moves.
 Weapon-provided moves are temporary.
-If the weapon is removed, the move provided by the weapon is removed.
+When a weapon is unequipped and moved into the inventory, 
+the temporary move provided by that weapon is removed from the hero.
 
 
 33. Armor
@@ -1025,119 +1077,272 @@ Abilities
 Affinity
 
 Armor is intended to be the main way heroes gain an Affinity.
-The database currently also allows armor to provide a move through gear.move_id.
+When armor is unequipped and moved into the inventory, 
+its stat bonuses, Ability, and Affinity are removed from the hero.
+The database currently also allows armor to provide a move through equipment.move_id.
 Whether armor should actually be able to provide moves is still a design decision.
 
 
 34. Monster AI
 
-Monster AI determines how a monster behaves during combat.
-The AI is stored in:
+Monster AI determines how monsters behave during combat.
+The AI configuration is stored in: model_monster.ai
 
-model_monster.ai
+All monsters use the same AI structure. Different AI features can be enabled 
+depending on how complex the monster's behaviour needs to be.
 
-A simple monster could use:
+The AI structure contains:
+Move Selection
+Strategies
+Phases
+Reactions
 
-{ 
-   "move_selection": "random" 
+Not every monster needs to use all these features.
+34.1 Move Selection
+
+Move Selection determines how a monster chooses which move to use during its turn.
+The move selection behaviour is configured in model_monster.ai.
+
+Example: json
+{
+   "move_selection": "random"
 }
 
-This means the monster randomly selects from its available moves.
+Each move has a category property that determines what kind of move it is. 
+This category is used by the monster AI when selecting moves.
+
+Move Categories:
+Offense: Attacking and damage-dealing moves.
+Defensive: Defensive, healing and damage-negating moves.
+Balanced: General-purpose moves suitable for different situations.
+Support: Moves that support allies or provide beneficial effects.
+
+Move Selection Behaviours:
+Random: Randomly selects an available move, without considering its category.
+Careful: Prefers defensive, balanced and support moves.
+Reckless: Prefers offense and balanced moves.
+Supportive: Prefers support, defensive and balanced moves.
+
+The AI prefers moves that match its move selection behaviour but 
+can still select other available moves when appropriate.
+Not every monster needs to use the same move selection behaviour.
 
 More complex AI can use:
-
 Move-selection behaviors
 Conditions
 Phases
 Reactions to combat events
 
+34.2 Strategies
+
+Strategies allow monsters to make more intelligent decisions based on combat conditions.
+
+A strategy can influence:
+Which move the monster selects.
+Which target the monster selects.
+The priority of certain moves or targets.
+Which combat situations the monster responds to when making decisions.
+Strategy can communicate with another monsters strategy to coordinate a synergie together.
+
+
+Strategies are evaluated when the monster selects its action.
+Example:
+
+A monster can prioritize attacking heroes with low HP.
+json
+
+{
+   "strategies": 
+   [
+      {
+         "name": "target_weakest",
+         "conditions": 
+         [
+            {
+               "stat": "hp_percent",
+               "operator": "<=",
+               "value": 30,
+               "target": "enemy"
+            }
+         ],
+         "priority": 10,
+         "target": "lowest_hp_enemy"
+      }
+   ]
+}
+
+In this example:
+The monster checks whether an enemy has 30% HP or less.
+If the condition is satisfied, the strategy becomes available.
+The monster prioritizes targeting the enemy with the lowest HP.
+
+Strategies can also influence move selection.
+For example, a monster could prioritize healing when its HP is low or use magic against enemies with high Defense.
+If multiple strategies are active, their priorities determine which strategies are preferred.
+Strategies do not directly execute moves. They influence the monster's normal move and target selection.
+
+34.3 Monster AI Structure
+
+A monster does not need to use every AI feature.
+A simple monster could use: json
+{
+   "move_selection": "random"
+}
+
+A more intelligent monster could use: json
+{
+   "move_selection": "careful",
+   "strategies": 
+   [
+      {
+         "name": "target_weakest",
+         "priority": 10,
+         "target": "lowest_hp_enemy"
+      }
+   ]
+}
+
+Bosses can use the same strategies, in addition to their phases and reactions.
 
 35. Boss AI
 
+Boss AI extends the normal Monster AI system with additional behaviour.
+
+Bosses can use:
+Move Selection
+Strategies
+Phases
+Reactions
+
+This allows bosses to change their behaviour throughout 
+combat and respond to actions performed by the player.
+
+35.1 Boss Phases
+
 Bosses can have multiple phases.
 
-Each phase can define:
+Each phase defines the conditions required for the phase to become active.
 
-A condition that determines when the phase is active
-Available moves
-How moves are selected
+A phase can define:
+A name.
+Conditions that determine when the phase is active.
+Available moves.
+Move-selection behaviour.
 
-Example:
+All conditions defined for a phase must be satisfied for that phase to become active.
 
-{ "phases": [ 
-   { 
-      "name": "phase_1", 
-      "condition": 
+Example: json
+
+{ 
+   "phases": 
+   [ 
       { 
-         "stat": "hp_percent", 
-         "operator": ">", 
-         "value": 75 
+         "name": "phase_1", 
+         "condition": 
+         { 
+            "stat": "hp_percent", 
+            "operator": ">", 
+            "value": 75 
+         }, 
+         "moves": [3, 4], 
+         "move_selection": "careful" 
       }, 
-      "moves": [3, 4], 
-      "move_selection": "careful" 
-   }, 
-   { 
-      "name": "phase_2", 
-      "condition": 
       { 
-         "stat": "hp_percent", 
-         "operator": "<=", 
-         "value": 75
+         "name": "phase_2", 
+         "condition_logic": "AND",
+         "conditions": 
+         [
+            { 
+               "stat": "hp_percent", 
+               "operator": "<=", 
+               "value": 75
+            },
+            { 
+               "stat": "hp_percent", 
+               "operator": ">", 
+               "value": 40
+            }
+         ],
+         "moves": [3, 4, 6], 
+         "move_selection": "random"
       }, 
-      "moves": [3, 4, 6], 
-      "move_selection": "random"
-   }, 
-   { 
-      "name": "phase_3", 
-      "condition": 
       { 
-         "stat": "hp_percent", 
-         "operator": "<=", 
-         "value": 40 
-      }, 
-      "moves": [4, 6, 8, 9], 
-      "move_selection": "reckless" 
-   }] 
+         "name": "phase_3", 
+         "condition": 
+         { 
+            "stat": "hp_percent", 
+            "operator": "<=", 
+            "value": 40 
+         }, 
+         "moves": [4, 6, 8, 9], 
+         "move_selection": "reckless" 
+      }
+   ]
 }
 
-The exact AI JSON structure is not final.
+35.2 Strategies
 
-AI Behaviors
+Bosses can also use strategies.
+Strategies influence the boss's normal move and target selection.
+Strategies work the same way for bosses as they do for normal monsters.
+The active phase can also influence which moves are available to the strategies.
 
-Careful
-The monster is more likely to use defensive, healing, or damage-negating moves.
+35.3 Boss Reactions
 
-Random
-The monster randomly selects from its available moves.
+Reactions allow bosses to respond to actions and events that occur during combat.
+Unlike strategies, reactions can execute an action immediately in response to a specific event.
+Reactions are separate from normal move selection and phase behaviour.
 
-Reckless
-The monster is more likely to use attacking moves.
+Example: json
 
-Additional behaviors can be added later.
+{
+   "reactions":
+   [
+      {
+         "name": "block",
+         "trigger": "enemy_move_used",
+         "condition_logic": "AND",
+         "conditions": 
+         [
+            { 
+               "phase": "phase_1"
+            },
+            { 
+               "effect": "damage_modifier",
+               "operator": "==",
+               "duration": {"value": 0, "unit": "turns"}
+            }
+         ],
+         "effect":
+         {
+            "type": "use_move",
+            "target": "self", 
+            "move_id": 9 // Guard
+         }
+      }
+   ]
+}
 
-AI Reactions
-Bosses can eventually react to actions performed during combat.
+The exact AI JSON structure and available behaviours are still
+being designed and can be expanded during development and balancing.
 
-For example:
+Boss Reactions will inisly not be added but at a later point
 
-If the player uses a Fire move, the boss may use a Fire counter.
-If the player repeatedly uses Magic moves, the boss may activate a Magic defense.
-If the player heals, the boss may prioritize attacking the healer.
+35.6 Shared Effect System
 
-These reactions are separate from normal phase behavior.
+Boss AI reactions use the same effect structure as Abilities and Moves.
+This allows the game to use a shared Effect Reader to process effects from different systems.
 
-A boss can therefore have both:
+For example, a reaction can:
+Execute a move.
+Apply a status effect.
+Change a stat.
+Reduce incoming damage.
+Perform other supported effects.
 
-Phase behavior
-
-HP > 75%       -> Careful
-HP 40–75%      -> Random
-HP <= 40%      -> Reckless
-
-and combat reactions
-
-Player uses Fire -> Fire Counter
-Player heals     -> Target healer
+The Effect Reader does not need to know whether an effect originated from a boss reaction, an ability or a move.
+It only needs to read the effect data and execute the appropriate operation.
+The exact AI JSON structure and available behaviours are still being designed and can be expanded during development and balancing.
 
 
 36. Turn Order
@@ -1148,15 +1353,17 @@ Synergies are resolved before normal moves.
 If both sides create a synergy:
 
 Hero Monster synergy
-    ↓
+|
+v
 Hero synergy
-    ↓
+|
+v
 Monster synergy
 
 Hero synergies are resolved first.
 After synergies, normal moves are resolved.
 Hero Move Order
-Heroes act in the order in which their moves were selected.
+Heroes action are used in the order in which their moves were selected.
 
 Example:
 
@@ -1167,7 +1374,7 @@ Hero 4 selects fourth
 
 Monster Move Order
 
-Monsters act from left to right.
+Monsters action are selected from left to right.
 
 For example:
 
@@ -1198,6 +1405,8 @@ Effective Defense = Defense
 Magic move:
 Effective Defense = Defense × 0.5
 
+The minimum damage dealt by a damaging move is 1
+
 38. Ending an Encounter
 
 An encounter continues until all entities on one side have 0 HP.
@@ -1206,10 +1415,9 @@ Heroes Lose
 
 If all heroes reach 0 HP:
 
-The encounter ends.
-The player loses.
-The game returns to the start menu.
-The player is returned to the save point they last saved at.
+When the player loses an encounter, 
+the game loads the last saved player state from the database. 
+Any progress made after the last save is lost.
 
 Heroes Win
 
@@ -1231,12 +1439,14 @@ The total XP comes from the monsters' XP rewards.
 
 The current planned party modifiers are:
 
-1 hero → 100% each
-2 heroes → 75% each
-3 heroes → 66% each
-4 heroes → 50% each
+1 hero -> 100% each
+2 heroes -> 75% each
+3 heroes -> 66% each
+4 heroes -> 50% each
 
 These values are not final.
+Each hero receives the specified percentage of the monster's total XP reward. 
+The percentage is applied individually to every participating hero and is not divided between the heroes.
 
 The purpose is to prevent a large party from always being strictly better than using fewer heroes.
 This system may be removed if testing shows that it does not improve the game.
@@ -1257,6 +1467,10 @@ Give the hero a Stat Point.
 Allow the player to select which stat to increase.
 Check whether the hero learns a new move.
 Restore the hero's HP and MP to maximum.
+
+If a hero receives enough XP to gain multiple levels, 
+the game repeats the leveling process until the hero 
+no longer has enough XP to reach the next level.
 
 41. Stat Points
 
@@ -1298,8 +1512,10 @@ Armor:
 Fire Armor
 Drop Chance: 5%
 
-After the encounter, the game performs the drop checks.
-and shows this menu if a somthing drops
+Each defeated monster is checked independently for weapon and armor drops. 
+Multiple pieces of equipment can therefore drop from a single encounter.
+
+After checking shows this menu if a somthing drops
 
 --------------------------
 | the Flame goblin dropt |
@@ -1314,17 +1530,10 @@ and shows this menu if a somthing drops
 | Exit                   |
 --------------------------
 
-after slecting a hero to replase the gear for.
-this is the same hero selection menu used in 7.1
+Slect allows the Equipment to be put on directly.
+Exit will put the Equipment in the player's inventory.
 
------------------------------
-| Steel Armor -> Fire Armor |
-|                           |
-| hp      5 -> 10           |
-| Defense 7 -> 10           |
-|                           |
-| Back                      |
------------------------------
+equipment comparison menu is shown when Slect is selected
 
 43. Dialogue box
 
@@ -1379,10 +1588,210 @@ Response sent to JavaScript
         ↓
 Screen updated
 
-44. Backend
 
-there are 3 stats that the game can be in the map, an encounter and a menu 
-this info wil be put in the session 
+44. Application Structure
 
-the JavaScript will send the request to a main controller (Dispatcher) that will figerout the game state 
-and send a request to map/encounter/menu control and get a responds back and send it to the frondend
+The application is divided into a frontend, controllers, and services.
+The frontend displays the game and sends player input to the backend. 
+The backend processes the input using the appropriate service and returns the updated game state to the frontend.
+
+44.1 Website Navigation
+
+When a user visits the website, they are presented with the Login page.
+The user can either:
+
+Log in using an existing account.
+Navigate to the Register page to create a new account.
+
+After successfully logging in or registering, the user is redirected to the Game page.
+The Game page is where the player interacts with the game.
+
+44.2 Game Input
+
+The frontend handles player input, such as:
+
+Arrow keys for movement and menu navigation.
+Enter for confirming actions.
+Other inputs required by the game.
+
+When the player performs an action, JavaScript sends a request to the Laravel backend without refreshing the entire page.
+The request is sent to the GameController.
+The GameController:
+
+Receives the player's input.
+Validates the incoming data to ensure it has the correct format and contains the required information.
+Retrieves the current gameState from the session.
+Determines which service should handle the input.
+Sends the input to the appropriate service.
+Receives the result from that service.
+Returns the updated game data to the frontend.
+
+If the input is invalid, the request is rejected 
+
+44.3 Game States
+
+The current game state is stored in the session.
+There are three main game states:
+
+map – The player is exploring a map.
+encounter – The player is participating in a encounter.
+menu – The player is interacting with a menu.
+
+The GameController uses the current game state to determine which service should process the player's input.
+For example:
+
+If gameState is map, input is sent to MapService.
+If gameState is encounter, input is sent to EncounterService.
+If gameState is menu, input is sent to MenuService.
+
+Services can request actions from other services when necessary.
+When an action changes the current game state, the session is updated accordingly.
+
+44.4 Services
+
+The application currently uses the following services:
+
+MapService
+
+Handles everything related to map exploration.
+Responsibilities include:
+
+Processing player movement.
+Checking whether tiles can be entered.
+Updating the player's map position.
+Detecting points of interest.
+Loading and displaying map data.
+Requesting encounters when the player activates an encounter point.
+Opening menus when the player activates special points.
+
+EncounterService
+
+Handles everything related to combat.
+Responsibilities include:
+
+Starting encounters.
+Loading heroes and monsters.
+Processing combat actions.
+Calculating damage and effects.
+Checking and activating synergies.
+Processing monster AI.
+Determining encounter victories and defeats.
+Calculating XP, Gold, and equipment rewards.
+
+MenuService
+
+Handles menus and player interactions outside normal map exploration and combat.
+Responsibilities include:
+
+Displaying menus.
+Processing menu navigation.
+Handling Save Point menus.
+Handling Shop menus.
+Handling equipment purchases.
+Handling move purchases and replacements.
+Displaying information.
+Handling recruitment menus.
+Displaying encounter rewards.
+
+SaveService
+
+Handles saving player progress to the database.
+Responsibilities include:
+
+Saving the player's current map and coordinates.
+Saving hero data.
+Saving equipment ownership and inventory.
+Saving equipped equipment.
+Saving other required player progress.
+
+44.5 Communication Between Services
+
+Services can request actions from other services when an action requires functionality that belongs to another part of the game.
+For example, when a player activates an encounter point, MapService requests EncounterService to start an encounter.
+Similarly, MenuService can request SaveService to save the player's progress.
+Services can also request another service to prepare the next game screen when an interaction is completed.
+
+The following examples describe how the services communicate.
+Example 1: Starting an Encounter
+
+When the player moves onto an encounter point (.):
+
+MapService detects that the player has activated an encounter point.
+MapService requests EncounterService to start an encounter.
+EncounterService selects a random encounter and loads the required monsters.
+EncounterService changes the gameState to encounter.
+The encounter data is returned to the frontend.
+The frontend displays the combat screen.
+
+When the encounter ends:
+
+EncounterService calculates and processes the rewards.
+EncounterService changes the gameState to menu if a reward menu needs to be displayed.
+EncounterService requests MenuService to display the encounter rewards.
+The player interacts with the reward menu.
+When the menu is closed, MenuService requests MapService to return to the map.
+MapService prepares the map data.
+The gameState is changed to map.
+The frontend displays the map.
+
+Example 2: Activating a Save Point
+When the player attempts to move onto a Save Point (S):
+
+MapService detects the Save Point.
+The player does not move onto the Save Point tile.
+MapService requests MenuService to display the Save Point menu.
+MenuService changes the gameState to menu.
+The frontend displays the Save Point menu.
+
+If the player selects Save and Continue:
+
+MenuService requests SaveService to save the player's progress.
+SaveService updates the required player data in the database.
+MenuService requests MapService to return to the map.
+MapService prepares the map data.
+The gameState is changed to map.
+The frontend displays the map.
+
+If the player selects Save and Quit:
+
+MenuService requests SaveService to save the player's progress.
+SaveService updates the required player data in the database.
+The player is logged out.
+The player is redirected to the Login page.
+
+If the player selects Exit:
+
+The Save Point menu is closed.
+MenuService requests MapService to return to the map.
+The gameState is changed to map.
+The frontend displays the map without saving.
+
+44.6 Application Flow
+
+The general application structure is:
+website
+|
+v
+login page -> register page 
+|             |
++-------------+
+|
+v
+game page
+|
+v
+javaScript
+|
+| player input
+v
+GameController
+|
++----------------+----------+
+|                |          |
+v                v          v
+EncounterService MapService MenuService
+|                |          |
++----------------+----------+
+|
+v
+game

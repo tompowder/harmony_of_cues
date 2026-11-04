@@ -11,14 +11,13 @@ return new class extends Migration
     */
    public function up(): void
    {
-      Schema::create('equipment_monsters', function (Blueprint $table) {
+      Schema::create('equipment_monsters', function (Blueprint $table) 
+      {
          $table->id();
          $table->foreignId('equipment_id')->constrained('equipment');
          $table->foreignId('model_monster_id')->constrained('model_monsters');
          $table->unsignedTinyInteger('drop_chance')->nullable();
          $table->timestamps();
-
-         //$table->check('drop_chance IS NULL OR drop_chance BETWEEN 1 AND 100');
       });
    }
 

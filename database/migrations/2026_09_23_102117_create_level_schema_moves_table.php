@@ -11,7 +11,8 @@ return new class extends Migration
     */
    public function up(): void
    {
-      Schema::create('level_schema_moves', function (Blueprint $table) {
+      Schema::create('level_schema_moves', function (Blueprint $table) 
+      {
          $table->id();
          $table->foreignId('level_schema_id')->constrained('level_schemas');
          $table->foreignId('move_id')->constrained('moves');

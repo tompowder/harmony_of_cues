@@ -11,14 +11,16 @@ return new class extends Migration
     */
    public function up(): void
    {
-      Schema::create('affinity_relationships', function (Blueprint $table) {
+      Schema::create('affinity_relationships', function (Blueprint $table) 
+      {
          $table->id();
          $table->foreignId('affinity_id')->constrained('affinities');
          $table->foreignId('target_affinity_id')->constrained('affinities');
          $table->decimal('multiplier');
          $table->timestamps();
 
-         $table->unique([
+         $table->unique(
+         [
             'affinity_id',
             'target_affinity_id',
          ]);

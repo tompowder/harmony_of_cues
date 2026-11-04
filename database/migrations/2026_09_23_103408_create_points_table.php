@@ -11,7 +11,8 @@ return new class extends Migration
     */
    public function up(): void
    {
-      Schema::create('points', function (Blueprint $table) {
+      Schema::create('points', function (Blueprint $table) 
+      {
          $table->id();
          $table->foreignId('map_id')->constrained('maps');
          $table->string('name');

@@ -11,7 +11,8 @@ return new class extends Migration
     */
    public function up(): void
    {
-      Schema::create('hero_stat_points', function (Blueprint $table) {
+      Schema::create('hero_stat_points', function (Blueprint $table) 
+      {
          $table->id();
          $table->unsignedInteger('stat_points_hp');
          $table->unsignedInteger('stat_points_mp');

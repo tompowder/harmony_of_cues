@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-      Schema::create('move_saved_heroes', function (Blueprint $table) {
+      Schema::create('move_saved_heroes', function (Blueprint $table) 
+      {
          $table->id();
          $table->foreignId('move_id')->nullable()->constrained('moves');
          $table->foreignId('saved_heroes_id')->nullable()->constrained('saved_heroes');
          $table->unsignedInteger('slot');
          
-         $table->enum('source', [
+         $table->enum('source', 
+         [
             'level',
             'shop',
             'weapon',

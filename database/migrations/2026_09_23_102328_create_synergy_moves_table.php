@@ -11,12 +11,14 @@ return new class extends Migration
     */
    public function up(): void
    {
-      Schema::create('synergy_moves', function (Blueprint $table) {
+      Schema::create('synergy_moves', function (Blueprint $table) 
+      {
          $table->id();
          $table->foreignId('move_id')->constrained('moves');
          $table->foreignId('synergy_id')->constrained('synergies');
 
-         $table->enum('participant', [
+         $table->enum('participant', 
+         [
             'self',
             'ally',
             'enemy',

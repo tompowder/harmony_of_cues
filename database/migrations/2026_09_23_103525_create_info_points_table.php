@@ -11,12 +11,14 @@ return new class extends Migration
     */
    public function up(): void
    {
-      Schema::create('info_points', function (Blueprint $table) {
+      Schema::create('info_points', function (Blueprint $table) 
+      {
          $table->id();
          $table->foreignId('point_id')->unique()->constrained('points');
          $table->foreignId('info_id')->unique()->constrained('infos');
 
-         $table->unique([
+         $table->unique(
+         [
             'point_id',
             'info_id',
          ]);

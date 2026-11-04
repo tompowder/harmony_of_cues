@@ -11,7 +11,8 @@ return new class extends Migration
     */
    public function up(): void
    {
-      Schema::create('entities', function (Blueprint $table) {
+      Schema::create('entities', function (Blueprint $table) 
+      {
          $table->id();
          $table->foreignId('level_schema_id')->constrained('level_schemas');
          $table->foreignId('affinity_id')->nullable()->constrained('affinities');

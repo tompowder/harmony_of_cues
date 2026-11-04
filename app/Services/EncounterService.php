@@ -370,7 +370,7 @@ class EncounterService
             'gold_drop' => $Mondata->gold_drop,
             'xp_drop' => $Mondata->xp_drop,
             'boss' => $Mondata->boss,
-            'ai' => $Mondata->ai,
+            'ai' => json_decode($Mondata->ai, true),
             'equipment' => $this->processEquipment($EData),
             'moves' => $this->processMove($MData),
             'selected_move' => null,
@@ -728,7 +728,7 @@ class EncounterService
             $selectable['target_mode'] = 'single';
             break;
          }
-         case 'self_and_ally':
+         case 'self_and_allies':
          {
             $selectable['selectable']['allies'] = $allieIds;
             $selectable['target_mode'] = 'all';
@@ -923,14 +923,22 @@ class EncounterService
       return $encounter;
    }
 
+   private function AiReader()
+   {
+      // get all of the monsters moves 
+      // filter wat moves the monster can use hp/mp requerment
+      // pick a move based on careful random reckless (how do i know wat move careful or reckless is)
+
+      // targeting
+   }
+
    private function processMonsterAi(array $monsters)
    {
 
       foreach($monsters as &$monster)
       {
-         $ai = json_decode($monster['ai'], true);
+         $ai = $monster['ai'];
 
-         dd($monster);
       }
 
       return $monsters;
