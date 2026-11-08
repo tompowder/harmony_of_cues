@@ -864,19 +864,12 @@ The target type is stored in:
 move.target
 
 self: Targets the entity that used the move.
-
 ally: Targets one entity on the same side as the move user.
-
 enemy: Targets one enemy.
-
 An enemy is an entity on the opposing side of the encounter.
-
 allies: Targets all allies except the entity using the move.
-
 self_or_ally: Targets either the entity using the move or one ally.
-
 self_and_allies: Targets the entity using the move and its allies.
-
 self_or_ally_or_enemy: Can target any single entity in the encounter.
 
 enemies: Targets every enemy in the encounter.
@@ -1244,7 +1237,7 @@ Example: json
             "operator": ">", 
             "value": 75 
          }, 
-         "moves": [3, 4], 
+         "moves": [9, 10, 4, 16, 27], // Guard, Magic Guard, Flame Point, Blazing Kick, Pommel Strike
          "move_selection": "careful" 
       }, 
       { 
@@ -1263,7 +1256,7 @@ Example: json
                "value": 40
             }
          ],
-         "moves": [3, 4, 6], 
+         "moves": [4, 16, 5, 14, 27], // Flame Point, Blazing Kick, Fire Burst, Flame Slash, Pommel Strike
          "move_selection": "random"
       }, 
       { 
@@ -1274,7 +1267,7 @@ Example: json
             "operator": "<=", 
             "value": 40 
          }, 
-         "moves": [4, 6, 8, 9], 
+         "moves": [16, 5, 14, 25], // Blazing Kick, Fire Burst, (Flame Slash synergy) => Draco Inferno, Flare Bash
          "move_selection": "reckless" 
       }
    ]

@@ -925,11 +925,30 @@ class EncounterService
 
    private function AiReader()
    {
+      // if the monster is a boss first check what phase the boss is in 
+      // then select the move based on the boss's ai strategy for that phase
+      
       // get all of the monsters moves 
       // filter wat moves the monster can use hp/mp requerment
-      // pick a move based on careful random reckless (how do i know wat move careful or reckless is)
+      // if the monster has no moves it can use then it will skip its turn
+      // pick a move based on the monster's ai move_selection 
+      // supportive careful reckless random are the move selection types
+      // get the move's target type and find the valid targets based on the move's target type
+      // then select the target based on the monster's ai strategy 
+      // after in encounter for the monster fill selected_move and targets with the move and the target(s) that the monster will use
+      // then return the encounter with the monster's selected_move and targets filled in
 
-      // targeting
+      // example boss ai
+      // phases:
+      // phase_1: hp > 75% use moves 9 Guard, 10 Magic Guard, 4 Flame Point, 16 Blazing Kick and 27 Pommel Strike with careful move selection
+      // phase_2: 75% >= hp > 40% use moves 4 Flame Point, 16 Blazing Kick, 5 Fire Burst, 14 Flame Slash and 27 Pommel Strike with random move selection
+      // phase_3: hp <= 40% use moves 16 Blazing Kick, 5 Fire Burst, 14 (Flame Slash synergy) => Draco Inferno, 25 Flare Bash with reckless move selection
+      // strategies: 
+      // target_weakest target the enemy with the lowest hp with a high priority 
+
+      // example monster ai
+      // use random move selection 
+
    }
 
    private function processMonsterAi(array $monsters)

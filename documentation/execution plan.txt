@@ -147,11 +147,12 @@ D Automatically assign Skip to defeated heroes.
 
 4.3 monster slect
 W Implement monster AI reader.
-  Implement random move selection.
-  Implement conditional move selection.
+W Implement random move selection.
+W Implement conditional move selection.
   Implement HP and MP consumption when executing moves.
   Implement monster targeting.
   Implement monster action order from left to right.
+  Implement strategies move/target slect
   
   Implement boss phase changes.
   Implement boss AI behavior.

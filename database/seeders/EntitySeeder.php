@@ -94,8 +94,9 @@ class EntitySeeder extends Seeder
          ]
       ]);
 
-      $boss_ai = json_encode([
-      'phases' => 
+      $boss_ai = json_encode(
+      [
+         'phases' => 
          [ 
             [
                'name' => 'phase_1',
@@ -137,6 +138,19 @@ class EntitySeeder extends Seeder
                'moves' => [16, 5, 14, 25], // Blazing Kick, Fire Burst, Flame Slash => Draco Inferno, Flare Bash
                'move_selection' => 'reckless'
             ]
+         ],
+         
+         'strategies' =>
+         [
+            'name' => 'target_weakest',
+            'condition' => 
+            [
+               'stat' => 'hp_percent',
+               'operator' => '=<',
+               'value' => 40
+            ],
+            'priority' => 10,
+            'target' => 'lowest_hp_enemy'
          ]
       ]);
 
