@@ -228,13 +228,13 @@ class PointSeeder extends Seeder
             'id' => 1,
             'point_id' => 4, // alpha 11, 8
             'model_hero_id' => 2,
-            'condition' => json_encode(['conditions' => ['party_level' => 5]])
+            'condition' => json_encode(['conditions' => [['type' => 'party_level', 'operator' => '>=', 'value' => 5]]])
          ],
          [
             'id' => 2,
             'point_id' => 17, // gamma 24, 3
             'model_hero_id' => 2,
-            'condition' => json_encode(['conditions' => ['defeat_monster' => 8]])
+            'condition' => json_encode(['conditions' => [['type' => 'monster_defeat_count', 'monster_id' => 7, 'operator' => '>=', 'value' => 5]]])
          ]
       ]);
 

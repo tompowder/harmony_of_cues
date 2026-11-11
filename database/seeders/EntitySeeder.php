@@ -100,25 +100,31 @@ class EntitySeeder extends Seeder
          [ 
             [
                'name' => 'phase_1',
-               'condition' => 
+               'conditions' => 
                [
-                  'stat' => 'hp_percent',
-                  'operator' => '>',
-                  'value' => 75
+                  [
+                     'type' => 'stat_threshold',
+                     'stat' => 'hp_percent',
+                     'operator' => '>',
+                     'value' => 75
+                  ]
                ],
                'moves' => [9, 10, 4, 16, 27], // Guard, Magic Guard, Flame Point, Blazing Kick, Pommel Strike
                'move_selection' => 'careful'
             ],
             [
                'name' => 'phase_2',
+               'condition_logic' => 'AND',
                'conditions' =>
                [
                   [
+                     'type' => 'stat_threshold',
                      'stat' => 'hp_percent',
                      'operator' => '<=',
                      'value' => 75
                   ],
                   [
+                     'type' => 'stat_threshold',
                      'stat' => 'hp_percent',
                      'operator' => '>',
                      'value' => 40
@@ -129,11 +135,14 @@ class EntitySeeder extends Seeder
             ],
             [
                'name' => 'phase_3',
-               'condition' => 
+               'conditions' => 
                [
-                  'stat' => 'hp_percent',
-                  'operator' => '<=',
-                  'value' => 40
+                  [
+                     'type' => 'stat_threshold',
+                     'stat' => 'hp_percent',
+                     'operator' => '<=',
+                     'value' => 40
+                  ]
                ],
                'moves' => [16, 5, 14, 25], // Blazing Kick, Fire Burst, Flame Slash => Draco Inferno, Flare Bash
                'move_selection' => 'reckless'
@@ -142,15 +151,63 @@ class EntitySeeder extends Seeder
          
          'strategies' =>
          [
-            'name' => 'target_weakest',
-            'condition' => 
             [
-               'stat' => 'hp_percent',
-               'operator' => '=<',
-               'value' => 40
+               'name' => 'target_weakest',
+               'conditions' => 
+               [
+                  [
+                     'type' => 'phase',
+                     'phase_name' => 'phase_3'
+                  ]
+               ],
+               'actions' => 
+               [
+                  [
+                     'type' => 'stat_target',
+                     'stat_measure' => 'lowest',
+                     'stat' => 'current_hp',
+                     'target' => 'enemy',
+                     'strategy_type' => 'target'
+                  ]
+               ],
+               'priority' => 10
             ],
-            'priority' => 10,
-            'target' => 'lowest_hp_enemy'
+            [
+               'name' => 'use_attack_moves',
+               'actions' =>
+               [
+                  [
+                     'type' => 'move_preference',
+                     'strategy_type' => 'move',
+                     'value' => 'attack'
+                  ]
+               ],
+               'priority' => 8,
+            ],
+            [
+               'name' => 'block',
+               'condition_logic' => 'AND',
+               'conditions' => 
+               [
+                  [
+                     'type' => 'turn_count',
+                     'value' => '1'
+                  ],
+                  [
+                     'type' => 'phase',
+                     'phase_name' => 'phase_1'
+                  ]
+               ],
+               'actions' =>
+               [
+                  [
+                     'type' => 'use_move',
+                     'strategy_type' => 'move',
+                     'move_id' => '9'
+                  ]
+               ],
+               'priority' => 9,
+            ]
          ]
       ]);
 

@@ -16,6 +16,7 @@ return new class extends Migration
          $table->id();
          $table->foreignId('player_id')->constrained('players');
          $table->foreignId('model_monster_id')->constrained('model_monsters');
+         $table->unsignedInteger('amount');
          $table->timestamps();
 
          $table->unique(

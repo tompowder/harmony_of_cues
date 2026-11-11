@@ -19,7 +19,7 @@ class AbilitySeeder extends Seeder
             'id' => 1,
             'name' => 'Burning Body',
             'description' => 'Attackers receive damage when physically attacking the target',
-            'effect' => json_encode(['trigger' => 'taking_damage', 'condition' => ['move_type' => 'attack'], 'effect' => ['type' => 'use_move', 'target' => 'event.attacker', 'move_id' => 12]])
+            'effect' => json_encode(['trigger' => 'taking_damage', 'conditions' => [['type' => 'move_type', 'move_type' => 'attack']], 'effect' => ['type' => 'use_move', 'target' => 'attacker', 'move_id' => 12]])
          ],
          [
             'id' => 2,
@@ -31,7 +31,7 @@ class AbilitySeeder extends Seeder
             'id' => 3,
             'name' => 'Pack Hunter',
             'description' => 'Become stronger when another ally of the same type is alive.',
-            'effect' => json_encode(['trigger' => 'encounter_start', "condition" => ['same_type_allies_alive' => true], 'update_trigger' => 'ally_defeated', 'effect' => ['type' => 'stat_change', 'operator' => '*', 'stat' => 'attack', 'value' => 1.3, 'target' => 'self']])
+            'effect' => json_encode(['trigger' => 'encounter_start', 'conditions' => [['type' => 'same_type_allies_alive', 'value' => true]], 'update_trigger' => 'ally_defeated', 'effect' => ['type' => 'stat_change', 'operator' => '*', 'stat' => 'attack', 'value' => 1.3, 'target' => 'self']])
          ],
          [
             'id' => 4,
@@ -55,13 +55,13 @@ class AbilitySeeder extends Seeder
             'id' => 7,
             'name' => 'Burning Resolve',
             'description' => 'The user becomes stronger when badly injured.',
-            'effect' => json_encode(['trigger' => 'hp_changed', 'condition' => ['stat' => 'hp_percent', 'operator' => '<=', 'value' => 40], 'effects' => [['type' =>'stat_change', 'operator' => '*', 'stat' => 'attack', 'value' => 1.3, 'target' => 'self'], ['type' => 'enable_synergy', 'value' => true]], 'duration' => 'battle'])
+            'effect' => json_encode(['trigger' => 'hp_changed', 'conditions' => [['type' => 'stat_threshold', 'stat' => 'hp_percent', 'operator' => '<=', 'value' => 40]], 'effects' => [['type' =>'stat_change', 'operator' => '*', 'stat' => 'attack', 'value' => 1.3, 'target' => 'self'], ['type' => 'enable_synergy', 'value' => true]], 'duration' => 'battle'])
          ],
          [
             'id' => 8,
             'name' => 'Coward',
             'description' => 'Will run away after 5 turns.',
-            'effect' => json_encode(['trigger' => 'turn_end', 'condition' => ['turn' => 5], 'effect' => ['type' => 'flee', 'target' => 'self']])
+            'effect' => json_encode(['trigger' => 'turn_end', 'conditions' => [['type' => 'turn_count', 'operator' => '>=', 'value' => 5]], 'effect' => ['type' => 'flee', 'target' => 'self']])
          ]
       ]);
    }

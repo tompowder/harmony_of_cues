@@ -344,6 +344,12 @@ class LevelSchemaSeeder extends Seeder
             'level_schema_id' => 10, // infernal knight
             'move_id' => 5, // fire burst
             'level_requirement' => 1
+         ],
+         [
+            'id' => 37,
+            'level_schema_id' => 10, // infernal knight
+            'move_id' => 25, // Flare Bash
+            'level_requirement' => 1
          ]
       ]);
    }

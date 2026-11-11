@@ -1122,9 +1122,7 @@ Not every monster needs to use the same move selection behaviour.
 
 More complex AI can use:
 Move-selection behaviors
-Conditions
-Phases
-Reactions to combat events
+Strategies changes due to combat events
 
 34.2 Strategies
 
@@ -1149,6 +1147,7 @@ json
    [
       {
          "name": "target_weakest",
+         "strategy_type": "target",
          "conditions": 
          [
             {
@@ -1231,12 +1230,14 @@ Example: json
    [ 
       { 
          "name": "phase_1", 
-         "condition": 
-         { 
-            "stat": "hp_percent", 
-            "operator": ">", 
-            "value": 75 
-         }, 
+         "conditions": 
+         [
+            { 
+               "stat": "hp_percent", 
+               "operator": ">", 
+               "value": 75 
+            }
+         ], 
          "moves": [9, 10, 4, 16, 27], // Guard, Magic Guard, Flame Point, Blazing Kick, Pommel Strike
          "move_selection": "careful" 
       }, 
@@ -1261,12 +1262,14 @@ Example: json
       }, 
       { 
          "name": "phase_3", 
-         "condition": 
-         { 
-            "stat": "hp_percent", 
-            "operator": "<=", 
-            "value": 40 
-         }, 
+         "conditions": 
+         [
+            {
+               "stat": "hp_percent", 
+               "operator": "<=", 
+               "value": 40 
+            }
+         ], 
          "moves": [16, 5, 14, 25], // Blazing Kick, Fire Burst, (Flame Slash synergy) => Draco Inferno, Flare Bash
          "move_selection": "reckless" 
       }
@@ -1373,6 +1376,9 @@ For example:
 
 Monster 1 | Monster 2 | Monster 3
 first       second      third
+
+a log will be kept of alle the things that happen in a turn 
+this will be used by the code for conditions and strategies that requare more then one turn
 
 37. Taking Damage
 

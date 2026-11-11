@@ -229,9 +229,8 @@ Possible conditions include:
 No condition
 Pay a certain amount of Gold
 Defeat a specific monster
-Have a hero with a specific stat
+Have a hero with a specific amount of stats
 Have all required heroes at a specific level
-Other conditions added later
 
 The Recruitment Point creates a saved_hero for the player when the hero is recruited.
 The completed Recruitment Points are stored in player_recruitments 

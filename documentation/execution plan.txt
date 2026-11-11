@@ -328,3 +328,7 @@ D Insufficient HP and MP.
   Move learned and forgotten.
   Hero recruited.
   Information discovered.
+
+  11 bugfix
+  make it so that quantity in encounter_monsters works
+  make it so that 2 weapon moves can be on the same entity
