@@ -1043,99 +1043,56 @@ class EncounterService
             $targetstrategy = collect($priority)->where('strategy_type', '=', 'target')->first();
             $movestrategy = collect($priority)->where('strategy_type', '=', 'move')->first();
 
-            dd([$movestrategy, $targetstrategy]);
-            $monster = $this->actionsReader($targetstrategy['actions'], $monster, $encounter);
+            foreach ([$targetstrategy, $movestrategy] as $strategy)
+            {
+               if(isset($strategy))
+               {
+                  $monster = $this->actionsReader($strategy['actions'], $monster, $encounter);
+               }
+            }
          }
          
       }
 
-      return $monster;
-   }
+      if($monster['selected_move'] == null)
+      {$monster['selected_move'] = $this->processMoveSelection($usableMoves, $moveSelection, $monster['move_preference']);}
 
-   private function actionsReader(array $actions, array $monster, array $encounter)
-   {
-      foreach ($actions as $action)
-      {
-         $actionType = $action['type'];
-         switch ($actionType)
-         {
-            case "stat_target": 
-            {
-               $targetes = $this->processTargeting($monster, $encounter, 'monster', $action['target']); //(enemy, ally, self_or_ally, self_or_ally_or_enemy)
-
-               $statName = $action['stat']; // (current_hp, current_mp, hp, mp, attack, magic, defense)
-               if(in_array($statName, ['current_hp', 'current_mp']))
-               {
-                  $statType = explode('_', $statName)[0];
-                  $sort = 'current_stats';
-                  $statType = $monster[$sort][$statType];
-               }
-               else
-               {
-                  $sort = 'total_stats';
-                  $statType = $monster['total_stats'][$statType];
-               }
-
-               $measure = $action['stat_measure']; // (lowest, highest)
-
-               // get alle the entities from encounter using targetes
-               // then put the 2 arrays together and sort it by stat
-               // then put the target in monster 
-
-               $monsters = array_filter($encounter['monsters'], fn($monster) => in_array($monster['instance_id'], $targetes['selectable']['allies']));
-               $heroes = array_filter($encounter['heroes'], fn($hero) => in_array($hero['instance_id'], $targetes['selectable']['enemies']));   
-
-               $entities = array_merge($monsters, $heroes);
-
-               $test = collect($entities)->sortBy($sort . "." . $statType); 
-
-               if($measure == 'lowest')
-               {
-                  $test = $test->reverse()->first();
-               }
-               else if ($measure == 'highest')
-               {
-                  $test = $test->first();
-               }
-
-               $entityType = $test['entity_type'] == 'monster' ? 'allies' : 'enemies';
-
-               $monster['targets']['selectable'][$entityType] = $test['instance_id'];
-
-               break;
-            }
-            case "move_preference":
-            {
-               $monster['move_preference'] = $action['value'];
-               break;
-            }
-            case "use_move":
-            {
-               $move = array_first(array_filter($monster['moves'], fn($move) => $move['move_id'] == $action['move_id']));
-               $monster['selected_action'] = $move['type'];
-               $monster['selected_move'] = $move['move_id'];
-               break;
-            }
-         }
-      }
-
-      if($monster['selected_move'] != null && 
-      ($monster['targets']['selectable']['allies'] != [] ||  $monster['targets']['selectable']['enemies'] != []))
-      {
-         $moveTarget = $this->processTargeting($monster, $encounter, 'monster')['selectable'];
-         $actionTarget = $monster['targets']['selectable'];
-
-         $monsterId = array_filter($moveTarget['allies'], fn($monster) => in_array($monster, $actionTarget['allies']));
-         $heroId = array_filter($moveTarget['enemies'], fn($hero) => in_array($hero, $actionTarget['enemies'])); 
-
-         $entityId = array_merge($monsterId, $heroId);
-
-         if($entityId == [])
-         {
-            
-         }
-      }
+      $moveTarget = $this->processTargeting($monster, $encounter, 'monsters');
       
+      if($moveTarget['target_mode'] == 'all')
+      {
+         $monster['targets']['selected']['enemies'] = $moveTarget['selectable']['enemies'];
+         $monster['targets']['selected']['allies'] = $moveTarget['selectable']['allies'];
+         $monster['targets']['target_mode'] = $moveTarget['target_mode'];
+      }
+      else if ($moveTarget['target_mode'] == 'single')
+      {
+         if($monster['targets']['selectable']['enemies'] == [] && $monster['targets']['selectable']['allies'] == [])
+         {
+            $selectedMove = array_first(array_filter($moves, fn($move) => $move['move_id'] == $monster['slected_move']));
+            $count = 
+            [
+               'enemies' => count($monster['targets']['selectable']['enemies']), 
+               'allies' => count($monster['targets']['selectable']['allies'])
+            ];
+
+            if($selectedMove['category'] == 'offense' || $selectedMove['category'] == 'balanced')
+            {$singleTarget = 'enemies';}
+            else if($selectedMove['category'] == 'support' || $selectedMove['category'] == 'defense')
+            {$singleTarget = 'allies';}
+            else
+            {throw new Exception('move category not found: ' . $selectedMove['category']);}
+
+            $monster['targets']['selected'][$singleTarget][] = $moveTarget['selectable'][$singleTarget][random_int(0, $count[$singleTarget] - 1)];
+         }
+         else if($monster['targets']['selectable']['enemies'] != [])
+         {$monster['targets']['selected']['enemies'] = [$monster['targets']['selectable']['enemies'][0]];}
+         else if($monster['targets']['selectable']['allies'] != [])
+         {$monster['targets']['selected']['allies'] = [$monster['targets']['selectable']['allies'][0]];}
+
+         $monster['targets']['target_mode'] = 'single';
+      }
+
       return $monster;
    }
 
@@ -1226,6 +1183,123 @@ class EncounterService
       {return true;}
       if($conditionLogic == "OR")
       {return false;}
+   }
+
+   private function actionsReader(array $actions, array $monster, array $encounter)
+   {
+      foreach ($actions as $action)
+      {
+         $actionType = $action['type'];
+         switch ($actionType)
+         {
+            case "stat_target": 
+            {
+               $targetes = $this->processTargeting($monster, $encounter, 'monster', $action['target']); //(enemy, ally, self_or_ally, self_or_ally_or_enemy)
+
+               $statName = $action['stat']; // (current_hp, current_mp, hp, mp, attack, magic, defense)
+               if(in_array($statName, ['current_hp', 'current_mp']))
+               {
+                  $statType = explode('_', $statName)[0];
+                  $sort = 'current_stats';
+                  $statType = $monster[$sort][$statType];
+               }
+               else
+               {
+                  $sort = 'total_stats';
+                  $statType = $monster['total_stats'][$statType];
+               }
+
+               $measure = $action['stat_measure']; // (lowest, highest)
+               $monsters = array_filter($encounter['monsters'], fn($monster) => in_array($monster['instance_id'], $targetes['selectable']['allies']));
+               $heroes = array_filter($encounter['heroes'], fn($hero) => in_array($hero['instance_id'], $targetes['selectable']['enemies']));   
+
+               $entities = array_merge($monsters, $heroes);
+
+               $test = collect($entities)->sortBy($sort . "." . $statType); 
+
+               if($measure == 'lowest')
+               {
+                  $test = $test->reverse()->first();
+               }
+               else if ($measure == 'highest')
+               {
+                  $test = $test->first();
+               }
+
+               $entityType = $test['entity_type'] == 'monster' ? 'allies' : 'enemies';
+
+               $monster['targets']['selectable'][$entityType] = $test['instance_id'];
+
+               break;
+            }
+            case "move_preference":
+            {
+               $monster['move_preference'] = $action['value'];
+               break;
+            }
+            case "use_move":
+            {
+               $move = array_first(array_filter($monster['moves'], fn($move) => $move['move_id'] == $action['move_id']));
+               $monster['selected_action'] = $move['type'];
+               $monster['selected_move'] = $move['move_id'];
+               break;
+            }
+         }
+      }
+
+      // if the monster has a selected move and there are selected target(s).
+      // check if the target and the move are compatible, if not clear the selectable targets
+      if($monster['selected_move'] != null && 
+      ($monster['targets']['selectable']['allies'] != [] ||  $monster['targets']['selectable']['enemies'] != []))
+      {
+         $moveTarget = $this->processTargeting($monster, $encounter, 'monster')['selectable'];
+         $actionTarget = $monster['targets']['selectable'];
+
+         $monsterId = array_filter($moveTarget['allies'], fn($monster) => in_array($monster, $actionTarget['allies']));
+         $heroId = array_filter($moveTarget['enemies'], fn($hero) => in_array($hero, $actionTarget['enemies'])); 
+
+         $entityId = array_merge($monsterId, $heroId);
+
+         if($entityId == [])
+         {
+            $monster['targets']['selectable']['allies'] = [];
+            $monster['targets']['selectable']['enemies'] = [];
+         }
+      }
+      
+      return $monster;
+   }
+
+   private function processMoveSelection(array $usableMoves, string $moveSelection, string $movePreference)
+   {
+      if($moveSelection == 'random')
+      {return $usableMoves[random_int(0, count($usableMoves) - 1)];}
+
+      $movePreference = $movePreference ?? '';
+
+      $pMoves = array_filter($usableMoves, fn($move) => $move['type'] == $movePreference);
+      $sMoves = array_filter($usableMoves, fn($move) => $move['category'] == $moveSelection || $move['category'] == 'balanced');
+      
+      foreach ($usableMoves as &$move) 
+      {
+         $weight = 1;
+         if(in_array($move, $pMoves))
+         {$weight += 1;}
+         if(in_array($move, $sMoves))
+         {$weight += 1;}
+
+         $move['weight'] = $weight;
+      }
+
+      $totalWeight = array_sum(array_map(fn($move) => $move['weight'], $usableMoves));
+      $randomWeight = random_int(1, $totalWeight);
+
+      foreach ($usableMoves as $move) 
+      {
+         $randomWeight -= $move['weight'];
+         if ($randomWeight <= 0) 
+         {return $move;}
+      }
    }
 
    private function compareValues(int|float $value1, string $operator, int|float $value2)
