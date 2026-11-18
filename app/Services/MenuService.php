@@ -112,7 +112,7 @@ class MenuService
       [
          'encounter' => 
          [
-            'encounter_start' => 'the monster(s) :monster are in the way!',
+            'encounter_start' => 'the monster(s) :monster are in the way.',
             'select_action' => 'Select an action.',
             'select_move' => 'Choose a :type move.',
             'select_target' => 'Choose a target using :move on.',
@@ -120,17 +120,17 @@ class MenuService
             'no_attack_moves' => ':hero doesn\'t know any attack moves.',
             'insufficient' => 'Not enough :type to use :move.',
             'escape_success' => 'Your party escaped the encounter safely.',
-            'escape_failed' => 'Your party couldn\'t escape the encounter!',
-            'synergy_activated' => ':synergy synergy activated!',
+            'escape_failed' => 'Your party couldn\'t escape the encounter.',
+            'synergy_activated' => ':synergy synergy activated.',
             'move_used' => ':user used :move on :target, dealing :damage damage.',
-            'affinity_advantage' => ':move has an affinity advantage!',
+            'affinity_advantage' => ':move has an affinity advantage.',
             'affinity_disadvantage' => ':move is at an affinity disadvantage.',
-            'enemy_defeated' => 'The :monster was defeated!',
+            'enemy_defeated' => 'The :monster was defeated.',
             'encounter_victory' => 'Victory! Your party earned :xp XP.',
-            'encounter_defeat' => 'Your party was defeated...',
+            'encounter_defeat' => 'Your party was defeated.',
             'equipment_drop' => 'The :monster dropped :equipment.',
             'gold_gained' => 'Your party received :gold gold.',
-            'level_up' => ':hero leveled up from :old_level to :new_level!',
+            'level_up' => ':hero leveled up from :old_level to :new_level.',
          ],
 
          'menu' => 

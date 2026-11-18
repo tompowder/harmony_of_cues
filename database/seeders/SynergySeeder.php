@@ -33,7 +33,7 @@ class SynergySeeder extends Seeder
          [
             'id' => 4,
             'move_id' => 28, // Prismatic Beam
-            'rules' => '{"calculation": {"stat": "magic", "method": "highest"}, "target": "highest_hp_enemy"}'
+            'rules' => '{"calculation": {"stat": "magic", "method": "highest"}, "actions": [{"type": "stat_target", "stat_measure": "lowest", "stat": "current_hp", "target": "enemy"}]}'
          ]
       ]);
 

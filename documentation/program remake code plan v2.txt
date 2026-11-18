@@ -766,7 +766,7 @@ Tackle
 Power: 1.5
 Cost: 1 HP
 
-If an attack requires more HP than the entity can spend, the move cannot be used.
+An entity can never defeat itself by paying the HP cost of a move.
 
 22. Magic Moves
 
@@ -1157,6 +1157,16 @@ json
                "target": "enemy"
             }
          ],
+         "actions":
+         [
+            {
+               "type": "stat_target",
+               "stat_measure": "lowest",
+               "stat": "current_hp",
+               "target": "enemy",
+               "strategy_type": "targe"
+            }
+         ]
          "priority": 10,
          "target": "lowest_hp_enemy"
       }
@@ -1172,6 +1182,8 @@ Strategies can also influence move selection.
 For example, a monster could prioritize healing when its HP is low or use magic against enemies with high Defense.
 If multiple strategies are active, their priorities determine which strategies are preferred.
 Strategies do not directly execute moves. They influence the monster's normal move and target selection.
+
+a boss can use moves using actions that it can not normaly use in its current phase
 
 34.3 Monster AI Structure
 
@@ -1324,7 +1336,7 @@ being designed and can be expanded during development and balancing.
 
 Boss Reactions will inisly not be added but at a later point
 
-35.6 Shared Effect System
+35.4 Shared Effect System
 
 Boss AI reactions use the same effect structure as Abilities and Moves.
 This allows the game to use a shared Effect Reader to process effects from different systems.
@@ -1406,7 +1418,80 @@ Effective Defense = Defense × 0.5
 
 The minimum damage dealt by a damaging move is 1
 
-38. Ending an Encounter
+38. Turn Resolution
+
+After all heroes and monsters have selected their moves and targets, the game begins resolving the encounter turn.
+
+The turn is resolved in the following order:
+Run attempt
+Synergy detection and validation
+Synergy execution
+Hero move execution
+Monster move execution
+End-of-turn processing
+
+38.1 Run Attempt
+
+The game checks whether any hero has selected Run,
+then calculate if heroes successfully escape.
+If the escape is successful, the encounter ends.
+If the escape fails, the turn continues and the monsters perform their actions.
+
+38.2 Synergy Detection
+
+The game collects the selected moves from all heroes and monsters.
+For each selected move, the game checks the synergy data to determine whether the move is part of a synergy.
+If a possible synergy is found, the game checks whether the selected moves and participants match the synergy requirements.
+
+The game checks:
+Whether all required moves have been selected.
+Whether the correct participants are using the required moves.
+Whether the synergy is being performed by heroes, monsters, or both.
+Whether all participants are alive.
+Whether all participants can afford the HP and MP costs of their original moves.
+
+If all requirements are satisfied, the synergy is registered.
+If any requirement fails, the synergy does not activate.
+The original moves remain selected and will be processed normally during move execution.
+
+30.3 Synergy Execution
+
+Before executing a synergy, the game processes its rules
+it will be determines how the synergy should behave, 
+including its calculation rules and other special requirements.
+
+Synergy moves are executed in the following order:
+Hero-Monster synergies.
+Hero synergies.
+Monster synergies.
+
+If a participant dies before their synergy executes, the synergy is cancelled.
+A cancelled synergy does not execute its synergy move, but the moves originaly selected are used instead
+
+30.4 Entity Move Execution
+
+After synergy execution, the game processes the remaining selected hero moves,
+then the game processes the monsters.
+Entity are processed from left to right as seen on the screen.
+
+For each entity:
+Retrieve the entities selected move and target.
+Check whether the entity is still alive.
+Check whether the entity can still use the selected move.
+If the entity cannot use the move, skip the action.
+If the entity can be used, deduct its HP or MP cost.
+Execute the move 
+
+If a hero entity before their action is executed, their turn is automatically skipped.
+If a synergy has already consumed a entities selected move, that move is not executed again.
+
+30.5 End of Turn
+
+After all synergies and normal moves have been processed, the turn ends.
+The game performs any required end-of-turn processing.
+The game then prepares the next turn, allowing the heroes and monsters to select their moves again.
+
+39. Ending an Encounter
 
 An encounter continues until all entities on one side have 0 HP.
 
@@ -1430,7 +1515,7 @@ Hero leveling is checked.
 The player returns to the map.
 
 
-39. XP Rewards
+40. XP Rewards
 
 The heroes receive XP based on the monsters defeated.
 
@@ -1450,7 +1535,7 @@ The percentage is applied individually to every participating hero and is not di
 The purpose is to prevent a large party from always being strictly better than using fewer heroes.
 This system may be removed if testing shows that it does not improve the game.
 
-40. Leveling Up
+41. Leveling Up
 
 After receiving XP, the game checks whether a hero has enough XP to level up.
 The current XP calculation is only a temporary example.
@@ -1471,7 +1556,7 @@ If a hero receives enough XP to gain multiple levels,
 the game repeats the leveling process until the hero 
 no longer has enough XP to reach the next level.
 
-41. Stat Points
+42. Stat Points
 
 When a hero levels up, they receive one Stat Point.
 
@@ -1487,7 +1572,7 @@ The selected stat increases.
 This allows two heroes of the same type and level to have different builds.
 
 
-42. Equipment Drops
+43. Equipment Drops
 
 After an encounter is won, the game checks the defeated monsters for equipment drops.
 
@@ -1534,7 +1619,7 @@ Exit will put the Equipment in the player's inventory.
 
 equipment comparison menu is shown when Slect is selected
 
-43. Dialogue box
+44. Dialogue box
 
 a dialogue box 
 
@@ -1566,35 +1651,13 @@ Move forgotten: Jonathan forgot Tackle.
 Move learned: Jonathan learned Heal!
 Insufficient gold: You don't have enough Gold.
 
-44. Backend and Frontend Communication
-
-The game needs a way for the frontend to communicate player actions to the backend.
-this is the approaches is currently being used.
-
-JavaScript Requests
-
-JavaScript sends requests to the Laravel backend without refreshing the entire page.
-
-Example:
-
-Player presses Arrow Right
-        ↓
-JavaScript sends request
-        ↓
-Laravel processes movement
-        ↓
-Response sent to JavaScript
-        ↓
-Screen updated
-
-
-44. Application Structure
+45. Application Structure
 
 The application is divided into a frontend, controllers, and services.
 The frontend displays the game and sends player input to the backend. 
 The backend processes the input using the appropriate service and returns the updated game state to the frontend.
 
-44.1 Website Navigation
+45.1 Website Navigation
 
 When a user visits the website, they are presented with the Login page.
 The user can either:
@@ -1605,7 +1668,7 @@ Navigate to the Register page to create a new account.
 After successfully logging in or registering, the user is redirected to the Game page.
 The Game page is where the player interacts with the game.
 
-44.2 Game Input
+45.2 Game Input
 
 The frontend handles player input, such as:
 
@@ -1627,7 +1690,7 @@ Returns the updated game data to the frontend.
 
 If the input is invalid, the request is rejected 
 
-44.3 Game States
+45.3 Game States
 
 The current game state is stored in the session.
 There are three main game states:
@@ -1646,7 +1709,7 @@ If gameState is menu, input is sent to MenuService.
 Services can request actions from other services when necessary.
 When an action changes the current game state, the session is updated accordingly.
 
-44.4 Services
+45.4 Services
 
 The application currently uses the following services:
 
@@ -1703,7 +1766,7 @@ Saving equipment ownership and inventory.
 Saving equipped equipment.
 Saving other required player progress.
 
-44.5 Communication Between Services
+45.5 Communication Between Services
 
 Services can request actions from other services when an action requires functionality that belongs to another part of the game.
 For example, when a player activates an encounter point, MapService requests EncounterService to start an encounter.
@@ -1765,7 +1828,7 @@ MenuService requests MapService to return to the map.
 The gameState is changed to map.
 The frontend displays the map without saving.
 
-44.6 Application Flow
+45.6 Application Flow
 
 The general application structure is:
 website

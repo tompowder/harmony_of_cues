@@ -117,7 +117,7 @@ class MoveSeeder extends Seeder
             'affinity_id' => 4, // none
             'name' => 'Guard',
             'type' => 'attack',
-            'power' => 0.75,
+            'power' => 0,
             'effect' => json_encode(['type' => 'damage_modifier', 'applies_to' => ['move_type' => 'attack'], 'operator' => '*', 'value' => 0.75, 'duration' => ['value' => 5, 'unit' => 'turns']]),
             'description' => 'Reduces damage taken from attack moves.',
             'cost' => 2,
@@ -129,7 +129,7 @@ class MoveSeeder extends Seeder
             'affinity_id' => 4, // none
             'name' => 'Magic-Barrier',
             'type' => 'magic',
-            'power' => 0.75,
+            'power' => 0,
             'effect' => json_encode(['type' => 'damage_modifier', 'applies_to' => ['move_type' => 'magic'], 'operator' => '*', 'value' => 0.75, 'duration' => ['value' => 5, 'unit' => 'turns']]),
             'description' => 'Reduces damage taken from magic moves.',
             'cost' => 5,

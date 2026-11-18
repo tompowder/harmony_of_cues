@@ -113,7 +113,7 @@ class EntitySeeder extends Seeder
                'move_selection' => 'careful'
             ],
             [
-               'name' => 'phase_2',
+               'name' => 'phase_2', 
                'condition_logic' => 'AND',
                'conditions' =>
                [
@@ -191,6 +191,7 @@ class EntitySeeder extends Seeder
                [
                   [
                      'type' => 'turn_count',
+                     'operator' => '==',
                      'value' => '1'
                   ],
                   [

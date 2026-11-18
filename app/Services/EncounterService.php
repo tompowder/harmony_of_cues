@@ -74,7 +74,7 @@ class EncounterService
          $monster->random_level = random_int($monster->min_level, $monster->max_level);
 
          $monsterMoves = DB::table('moves')->select(DB::raw("level_schema_moves.level_requirement, moves.name as move_name, moves.type, 
-         moves.id as move_id, moves.power, moves.effect, moves.cost, moves.target, affinities.id as affinity_id, affinities.name as affinity_name"))->
+         moves.id as move_id, moves.power, moves.effect, moves.cost, moves.category, moves.target, affinities.id as affinity_id, affinities.name as affinity_name"))->
          leftJoin('level_schema_moves', 'moves.id', '=', 'level_schema_moves.move_id')->
          leftJoin('affinities', 'moves.affinity_id', '=', 'affinities.id')->
          where('level_schema_moves.level_schema_id', '=', $monster->level_id)->
@@ -129,7 +129,7 @@ class EncounterService
          }
 
          $heroMoves = DB::table('move_saved_heroes')->select(DB::raw('move_saved_heroes.slot, move_saved_heroes.source, moves.name as move_name, moves.type, 
-         moves.id as move_id, moves.power, moves.effect, moves.cost, moves.target, affinities.id as affinity_id, affinities.name as affinity_name'))->
+         moves.id as move_id, moves.power, moves.effect, moves.cost, moves.category, moves.target, affinities.id as affinity_id, affinities.name as affinity_name'))->
          leftJoin('moves', 'move_saved_heroes.move_id', '=', 'moves.id')->
          leftJoin('affinities', 'moves.affinity_id', '=', 'affinities.id')->
          where('saved_heroes_id', '=', $hero->hero_id)->get();
@@ -149,7 +149,7 @@ class EncounterService
          'heroes' => $heroes,
          'monsters' => $monsters,
          'turn' => 1,
-         'phase' => 'hero_actions'
+         'phase' => 'hero_turn'
       ];
 
       $encounter = $this->selectNextHero($encounter, -1);
@@ -380,6 +380,7 @@ class EncounterService
             'move_preference' => null,
             'selected_action' => null,
             'selected_move' => null,
+            'effects' => [],
             'targets' => 
             [
                'selectable' => ['allies' => [], 'enemies' => []], 
@@ -443,6 +444,7 @@ class EncounterService
             'power' => $data->power,
             'move_effect' => $data->effect,
             'cost' => $data->cost,
+            'category' => $data->category,
             'target' => $data->target,
             'affinity' => ['affinity_id' => $data->affinity_id, 'affinity_name' => $data->affinity_name],
             'source' => isset($data->source) ? $data->source : null,
@@ -608,7 +610,7 @@ class EncounterService
             $coordinates = ["x" => 0, "y" => 0];
          }
 
-         if($encounter['phase'] == 'monster_actions')
+         if($encounter['phase'] == 'monster_turn')
          {
             $this->encounterPhaseChange($encounter);
          }
@@ -759,8 +761,9 @@ class EncounterService
          case 'all_except_self':
          {
             $selectableAllies = array_filter($allies, fn($ally) => $ally['instance_id'] != $entityKey);
+            $selectableIds = array_map(fn($hero) => $hero['instance_id'], $selectableAllies);
 
-            $selectable['selectable']['allies'] = $selectableAllies;
+            $selectable['selectable']['allies'] = $selectableIds;
             $selectable['selectable']['enemies'] = $enemieIds;
             $selectable['target_mode'] = 'all';
             break;
@@ -774,7 +777,7 @@ class EncounterService
          }
          default:
          {
-            throw new Exception('Unknown move target: {$moveTarget}');
+            throw new Exception('Unknown move target: ' . $target);
          }
       }
 
@@ -805,11 +808,10 @@ class EncounterService
          return $encounter;
       }
   
-      $encounter['phase'] = 'monster_actions';
-      $encounter['turn']++;
+      $encounter['phase'] = 'monster_turn';
   
       return $encounter;
-  }
+   }
 
    private function processHeroEnter(array $encounter, array &$coordinates) 
    {
@@ -920,20 +922,204 @@ class EncounterService
    private function encounterPhaseChange(array $encounter)
    {
       $phase = $encounter['phase'];
-      if($phase == 'hero_actions')
-      {
-
-      }
-      if($phase == 'monster_actions')
+      
+      if($phase == 'monster_turn')
       {
          foreach($encounter['monsters'] as &$monster)
          {
             $monster = $this->AiReader($monster, $encounter);
-            dd($monster);
          }
+
+         $phase = 'resolve_turn';
+      }
+
+      if($phase == 'resolve_turn')
+      {
+         $this->resolveEncounter($encounter);
       }
       
+      if($phase == 'hero_turn')
+      {
+         $encounter['turn']++;
+      }
+
       return $encounter;
+   }
+   
+   // Implement damage calculations.
+   // Implement Defense calculations.
+   // Implement affinity calculations.
+   
+   // Implement move effect reader
+   // Implement ability effect reader
+   // Implement ability events hooks
+
+   private function resolveEncounter(array $encounter)
+   {
+      // 1. Run attempt
+      // Check if any hero has selected Run.
+      // If the encounter is a boss encounter, heroes cannot escape.
+      // Otherwise, calculate the escape chance.
+      // If escape is successful, end the encounter.
+      // If escape fails, continue resolving the turn.
+      // The remaining hero actions are discarded after a failed escape.
+
+      // 2. Synergy detection and validation
+      // Collect the selected moves from all heroes and monsters.
+      // Check whether all participants can afford the HP and MP costs of their original moves.
+      // Query the synergy data using the selected move IDs.
+      // If a synergy is found for the the selected move ID,
+      // Check if the participant are using the corect moves to complete the synergy
+      // If all requirements are satisfied, register the synergy.
+      // Store the synergy move ID, calculation rules, original move IDs,
+      // original targets and participant entity IDs.
+
+      // 3. Synergy execution
+      // Process registered synergies in the following order: Hero-Monster synergies -> Hero synergies -> Monster synergies.
+      // Process the synergy rules using the RuleReader.
+      // Before executing each synergy, check whether all participants are alive.
+      // If a participant has died, cancel the synergy.
+      // If the synergy is cancelled, restore the original moves
+      // If the synergy executes successfully, deduct the required costs, 
+      // consume the original moves and execute the synergy move.
+
+      // 4. Entity move execution
+      // Process heroes first, followed by monsters.
+      // Process entities from left to right, as seen on the screen.
+      // For each entity:
+      // - Retrieve the selected move and target.
+      // - Skip the entity if it is dead.
+      // - Skip the move if it has already been consumed by a synergy.
+      // - Check whether the entity can still use the move.
+      // - If the move cannot be used, skip the action.
+      // - Otherwise, deduct the HP or MP cost.
+      // - Execute the move using the MoveExecuter.
+
+      // 5. End-of-turn processing
+      // Prepare the encounter for the next turn.
+      // remove selected_action, selected_move, move_preference and clear targets
+      // of alle the monster and heroes
+
+   }
+
+   private function MoveExecuter(array $data, array $move, array $encounter, string $entityType)
+   {
+      // 1. Determine enemies, allies and move type
+      // check wat a enemies or allies is
+      // Check whether the move is Attack, Magic or Piercing.
+
+      // 2.  Determine whether the move is a synergy move.
+      // $data['synergy'] determines whether the move is a synergy.
+
+      // If it is not a synergy:
+      // - Retrieve the entity using the move from $data['entity'].
+
+      // If it is a synergy:
+      // - Retrieve the synergy move ID.
+      // - Retrieve the synergy rules.
+      // - Retrieve the original move IDs.
+      // - Retrieve the original targets.
+      // - Retrieve the participant entity IDs.
+      // - Retrieve the participant entities and their current stats.
+      //
+      // These values are available in $data['synergy_data'].
+
+      // 3. Determine the affected targets.
+      // For normal moves, use $data['entity']['targets'].
+      // For synergy moves, use the synergy move's target
+      // and any additional targeting rules defined in: ['synergy_data']['rules']['actions'].
+      
+      // Identify each affected entity using its instance ID.
+      // Retrieve the targets' relevant stats, including HP, Max HP, Defense and Affinity.
+
+      // 4. Determine how the move should be processed.
+      // Check the move's effects for:
+      // - Healing effect.
+      // - Additional effects that should be applied alongside damage.
+
+      // A move with 0 Power does not perform damage calculations.
+      // It only applies its specified effects.
+
+      // 5. Calculate the move's offensive stat.
+      // Attack moves use the user's Attack stat.
+      // Magic moves use the user's Magic stat.
+      // Piercing moves use the highest offensive stat of the user (Attack or Magic).
+
+      // If the move is a synergy move, replace the user's offensive stat
+      // with the value calculated using: $data['synergy_data']['rules']['calculation'].
+      // The participating entities and their stats are available in: $data['synergy_data']['participants'].
+
+      // 6. Calculate damage for each target.
+      // Base Damage = Offensive Stat × Move Power × Affinity Multiplier
+      // Determine Effective Defense:
+      // - Attack: Target Defense.
+      // - Magic: Target Defense × 0.5.
+      // - Piercing: 0 Defense.
+
+      // Final Damage = Base Damage - Effective Defense
+      // The minimum damage dealt by a damaging move is 1.
+      // Do not calculate Affinity Multipliers or Effective Defense for healing moves.
+
+      // 7. Apply the calculated damage or healing to each target.
+      // Ensure HP cannot exceed the target's maximum HP.
+      // Ensure HP cannot fall below 0.
+
+      // 8. Apply additional move effects.
+      // Process any additional effects defined in move.effect.
+      // These can include status Stat modifications, Damage reduction.
+      // Store the applied effects in entity['effects'] in $encounter.
+
+      // 9. Update the encounter and return the result.
+      // Apply all changes to the corresponding entities in $encounter.
+      // Ensure all changes are preserved.
+      // Return the updated $encounter.
+      
+      if($entityType == 'heroes')
+      {
+         $allies = $encounter['heroes'];
+         $enemies = $encounter['monsters'];
+         $allieIds = array_map(fn($entity) => $entity['instance_id'], $allies);
+         $enemieIds = array_map(fn($entity) => $entity['instance_id'], $enemies);
+      }
+      elseif($entityType == 'monsters')
+      {
+         $allies = $encounter['monsters'];
+         $enemies = $encounter['heroes'];
+         $allieIds = array_map(fn($entity) => $entity['instance_id'], $allies);
+         $enemieIds = array_map(fn($entity) => $entity['instance_id'], $enemies);
+      }
+      else
+      {throw new Exception('entity type must be heroes or monsters');}
+
+   }
+
+   private function ruleReader(array $synergyData, array $encounter)
+   {
+      // 1. Retrieve and decode the synergy rules.
+      // Retrieve the rules from $synergyData.
+      // Decode the JSON rules into a PHP array.
+      //
+      // The rules contain:
+      // - calculation: Determines how the synergy's stats are calculated.
+      // - actions: Contains additional rules that must be processed.
+
+      // 2. Process calculation rules.
+      // Retrieve the participating entities and their current stats.
+      // Determine which stat should be used.
+      // Determine the calculation method.
+      
+      // Possible calculation methods:
+      // - average: Calculate the average stat of all participants.
+      // - highest: Use the highest stat among participants.
+      // - lowest: Use the lowest stat among participants.
+      // - added: Add together the stats of all participants.
+
+      // 3. Process action rules.
+      // Retrieve all rules defined in $synergyData['rules']['actions'].
+      // Process each action using actionReader().
+
+      // 4. Return the processed synergy rules.
+      // Return the calculated stats, selected targets
    }
 
    private function AiReader(array $monster, array $encounter)
@@ -942,40 +1128,6 @@ class EncounterService
       // if it is, determine which phase the boss is currently in
       // The boss's current phase determines which moves it can use,
       // and its move_selection type
-      
-      // get all of the monsters moves 
-      // filter wat moves the monster can use hp/mp requerment
-      // if the monster has no moves it can use then it will skip its turn
-
-      // select a move from the remaining usable moves.
-      // move_selection is determined by the monster's ai configuration:
-      // ai strategy has more priorty then ai move_selection
-      // first check if ai strategy conditions 
-      // a ai strategy can be a wat to target or a move it use
-      // if multiple triger take the one with the highest priorty of eath type (move/target)
-      // if the 2 are incompatible use the move and pick a target based on the moves type
-
-      // if there is no move ai strategy 
-      // pick a move based on the monster's ai move_selection and move type
-      // supportive careful reckless random are the move_selection types
-      // move type Offense Defensive Balanced Support
-      
-      // get the move's target type and find the valid targets based on the move's target type
-      // then select the target based on the monster's ai strategy
-      // if there is no ai strategy use the moves type to target (exsamel Offense target a random enemy)
-      // after in encounter for the monster fill selected_move and targets with the move and the target(s) that the monster will use
-      // then return the encounter with the monster's selected_move and targets filled in
-
-      // example boss ai
-      // phases:
-      // phase_1: hp > 75% use moves 9 Guard, 10 Magic Guard, 4 Flame Point, 16 Blazing Kick and 27 Pommel Strike with careful move selection
-      // phase_2: 75% >= hp > 40% use moves 4 Flame Point, 16 Blazing Kick, 5 Fire Burst, 14 Flame Slash and 27 Pommel Strike with random move selection
-      // phase_3: hp <= 40% use moves 16 Blazing Kick, 5 Fire Burst, 14 (Flame Slash synergy) => Draco Inferno, 25 Flare Bash with reckless move selection
-      // strategies: 
-      // target_weakest target the enemy with the lowest hp with a high priority 
-
-      // example monster ai
-      // use random move selection
 
       $AI = $monster['ai'];
 
@@ -996,6 +1148,9 @@ class EncounterService
             }
          }
 
+         if(!isset($selectPhase))
+         {throw new Exception('phase not found');}
+
          $monster['phase'] = $selectPhase['name'];
          $moves = array_filter($monster['moves'], fn($move) => in_array($move['move_id'], $selectPhase['moves']));
          $moveSelection = $selectPhase['move_selection'];
@@ -1006,6 +1161,10 @@ class EncounterService
          $moveSelection = $AI['move_selection'];
       }
 
+      // get all of the monsters moves 
+      // filter wat moves the monster can use hp/mp requerment
+      // if the monster has no moves it can use then it will skip its turn
+
       $usableAttackMoves = array_filter($moves, fn($move) => $move['type'] == 'attack' && $move['cost'] < $monster['current_stats']['hp']);
       $usableMagicMoves = array_filter($moves, fn($move) => $move['type'] == 'magic' && 0 < $monster['current_stats']['mp']);
 
@@ -1013,16 +1172,22 @@ class EncounterService
 
       if(count($usableMoves) == 0)
       {
-         $monster['selected_action'] = 'Skip';
+         $monster['selected_action'] = 'skip';
          $monster['selected_move'] = null;
 
          return $monster;
       }
 
-      $strategies = $AI['strategies'];
+      // first check if ai strategy conditions 
+      // a ai strategy can be a wat to target or a move it use
+      // if multiple triger take the one with the highest priorty of eath type (move/target)
+      // if the 2 are incompatible use the move and pick a target based on the moves type
+      // ai strategy has more priorty then ai move_selection
 
-      if($strategies)
+      if(isset($AI['strategies']))
       {
+         $strategies = $AI['strategies'];
+
          foreach ($strategies as $strategy)
          {
             $condition = true;
@@ -1038,24 +1203,48 @@ class EncounterService
 
          if(isset($checkedStrategies))
          {
-            $priority = collect($checkedStrategies)->sortBy('priority', SORT_DESC)->toArray();
+            $priority = collect($checkedStrategies)->sortBy('priority', SORT_DESC, true)->toArray();
 
-            $targetstrategy = collect($priority)->where('strategy_type', '=', 'target')->first();
-            $movestrategy = collect($priority)->where('strategy_type', '=', 'move')->first();
-
-            foreach ([$targetstrategy, $movestrategy] as $strategy)
+            foreach ($priority as $strategy)
             {
-               if(isset($strategy))
+               $actions = $strategy['actions'];
+
+               if(!isset($targetAction))
                {
-                  $monster = $this->actionsReader($strategy['actions'], $monster, $encounter);
+                  $targetAction = collect($actions)->where('strategy_type', '=', 'target')->first();
+               }
+               
+               if(!isset($movesAction))
+               {
+                  $movesAction = collect($actions)->where('strategy_type', '=', 'move')->first();
+               }
+            }
+
+            foreach ([$targetAction, $movesAction] as $action)
+            {
+               if(isset($action))
+               {
+                  $monster = $this->actionsReader($action, $monster, $encounter);
                }
             }
          }
          
       }
 
+      // if there is no move ai strategy 
+      // pick a move based on the monster's move_selection, move_preference and move category
+      // supportive, careful, reckless and random are the move_selection types
+      // move type support, defensive, offense and balanced  
+
       if($monster['selected_move'] == null)
-      {$monster['selected_move'] = $this->processMoveSelection($usableMoves, $moveSelection, $monster['move_preference']);}
+      {$monster['selected_move'] = $this->processMoveSelection($usableMoves, $moveSelection, $monster['move_preference'] ?? '');}
+
+      // get the possible targets for the move  
+      // if a target strategy (targets.selected) has selected a valid target, that target is used.
+      // otherwise, the AI selects a target based on the move's category.
+
+      $selectedMove = array_first(array_filter($moves, fn($move) => $move['move_id'] == $monster['selected_move'])); 
+      $monster['selected_action'] = $selectedMove['type'];
 
       $moveTarget = $this->processTargeting($monster, $encounter, 'monsters');
       
@@ -1069,26 +1258,33 @@ class EncounterService
       {
          if($monster['targets']['selectable']['enemies'] == [] && $monster['targets']['selectable']['allies'] == [])
          {
-            $selectedMove = array_first(array_filter($moves, fn($move) => $move['move_id'] == $monster['slected_move']));
             $count = 
             [
-               'enemies' => count($monster['targets']['selectable']['enemies']), 
-               'allies' => count($monster['targets']['selectable']['allies'])
+               'enemies' => count($moveTarget['selectable']['enemies']), 
+               'allies' => count($moveTarget['selectable']['allies'])
             ];
 
             if($selectedMove['category'] == 'offense' || $selectedMove['category'] == 'balanced')
             {$singleTarget = 'enemies';}
-            else if($selectedMove['category'] == 'support' || $selectedMove['category'] == 'defense')
+            else if($selectedMove['category'] == 'support' || $selectedMove['category'] == 'defensive')
             {$singleTarget = 'allies';}
             else
             {throw new Exception('move category not found: ' . $selectedMove['category']);}
 
-            $monster['targets']['selected'][$singleTarget][] = $moveTarget['selectable'][$singleTarget][random_int(0, $count[$singleTarget] - 1)];
+            if($count[$singleTarget] == 0)
+            {
+               $monster['selected_action'] = 'skip';
+               $monster['selected_move'] = null;
+            }
+            else
+            {
+               $monster['targets']['selected'][$singleTarget][] = $moveTarget['selectable'][$singleTarget][random_int(0, $count[$singleTarget] - 1)];
+            }
          }
          else if($monster['targets']['selectable']['enemies'] != [])
-         {$monster['targets']['selected']['enemies'] = [$monster['targets']['selectable']['enemies'][0]];}
+         {$monster['targets']['selected']['enemies'] = $monster['targets']['selectable']['enemies'];}
          else if($monster['targets']['selectable']['allies'] != [])
-         {$monster['targets']['selected']['allies'] = [$monster['targets']['selectable']['allies'][0]];}
+         {$monster['targets']['selected']['allies'] = $monster['targets']['selectable']['allies'];}
 
          $monster['targets']['target_mode'] = 'single';
       }
@@ -1159,6 +1355,7 @@ class EncounterService
                $amount = $defeatedMonster->amount ?? 0;
 
                $result = $this->compareValues($amount, $condition['operator'], $condition['value']);
+               break;
             }
             case "gold_amount": // int
             {
@@ -1185,66 +1382,82 @@ class EncounterService
       {return false;}
    }
 
-   private function actionsReader(array $actions, array $monster, array $encounter)
+   private function actionsReader(array $action, array $monster, array $encounter)
    {
-      foreach ($actions as $action)
+      $actionType = $action['type'];
+      switch ($actionType)
       {
-         $actionType = $action['type'];
-         switch ($actionType)
+         case "stat_target": 
          {
-            case "stat_target": 
+            $targetes = $this->processTargeting($monster, $encounter, 'monsters', $action['target']); //(enemy, ally, self_or_ally, self_or_ally_or_enemy)
+
+            $statName = $action['stat']; // (current_hp, current_mp, hp, mp, attack, magic, defense)
+            if(in_array($statName, ['current_hp', 'current_mp']))
             {
-               $targetes = $this->processTargeting($monster, $encounter, 'monster', $action['target']); //(enemy, ally, self_or_ally, self_or_ally_or_enemy)
-
-               $statName = $action['stat']; // (current_hp, current_mp, hp, mp, attack, magic, defense)
-               if(in_array($statName, ['current_hp', 'current_mp']))
-               {
-                  $statType = explode('_', $statName)[0];
-                  $sort = 'current_stats';
-                  $statType = $monster[$sort][$statType];
-               }
-               else
-               {
-                  $sort = 'total_stats';
-                  $statType = $monster['total_stats'][$statType];
-               }
-
-               $measure = $action['stat_measure']; // (lowest, highest)
-               $monsters = array_filter($encounter['monsters'], fn($monster) => in_array($monster['instance_id'], $targetes['selectable']['allies']));
-               $heroes = array_filter($encounter['heroes'], fn($hero) => in_array($hero['instance_id'], $targetes['selectable']['enemies']));   
-
-               $entities = array_merge($monsters, $heroes);
-
-               $test = collect($entities)->sortBy($sort . "." . $statType); 
-
-               if($measure == 'lowest')
-               {
-                  $test = $test->reverse()->first();
-               }
-               else if ($measure == 'highest')
-               {
-                  $test = $test->first();
-               }
-
-               $entityType = $test['entity_type'] == 'monster' ? 'allies' : 'enemies';
-
-               $monster['targets']['selectable'][$entityType] = $test['instance_id'];
-
-               break;
+               $statType = explode('_', $statName)[1];
+               $sortState = 'current_stats';
             }
-            case "move_preference":
+            else
             {
-               $monster['move_preference'] = $action['value'];
-               break;
+               $statType = $statName;
+               $sortState = 'total_stats';
             }
-            case "use_move":
-            {
-               $move = array_first(array_filter($monster['moves'], fn($move) => $move['move_id'] == $action['move_id']));
-               $monster['selected_action'] = $move['type'];
-               $monster['selected_move'] = $move['move_id'];
-               break;
-            }
+
+            $measure = $action['stat_measure']; // (lowest, highest)
+            $monsters = array_filter($encounter['monsters'], fn($monster) => in_array($monster['instance_id'], $targetes['selectable']['allies']) && $monster['current_stats']['hp'] > 0);
+            $heroes = array_filter($encounter['heroes'], fn($hero) => in_array($hero['instance_id'], $targetes['selectable']['enemies']) && $hero['current_stats']['hp'] > 0);   
+
+            $entities = array_merge($monsters, $heroes);
+            $sort = collect($entities)->sortBy($sortState . "." . $statType); 
+
+            if($measure == 'lowest')
+            {$targetEntity = $sort->first();}
+            else if ($measure == 'highest')
+            {$targetEntity = $sort->last();}
+            else 
+            {throw new Exception('Invalid measure: ' . $measure);}
+
+            $entityType = $targetEntity['entity_type'] == 'monster' ? 'allies' : 'enemies';
+            $monster['targets']['selectable'][$entityType][] = $targetEntity['instance_id'];
+
+            break;
          }
+         case "move_preference":
+         {
+            $monster['move_preference'] = $action['value'];
+            break;
+         }
+         case "use_move":
+         {
+            $move = array_first(array_filter($monster['moves'], fn($move) => $move['move_id'] == $action['move_id']));
+            $moveType = $move['type'];
+
+            $moveallowed = false;
+
+            if($moveType == 'attack' )
+            {
+               if($move['cost'] < $monster['current_stats']['hp'])
+               {$moveallowed = true;}
+            }
+            else if($moveType == 'magic')
+            {
+               if(0 < $monster['current_stats']['mp'])
+               {$moveallowed = true;}
+            }
+            else 
+            {
+               $moveallowed = true;
+            }
+
+            if($moveallowed)
+            {
+               $monster['selected_action'] = $moveType;
+               $monster['selected_move'] = $move['move_id'];
+            }
+            
+            break;
+         }
+         
       }
 
       // if the monster has a selected move and there are selected target(s).
@@ -1254,7 +1467,7 @@ class EncounterService
       {
          $moveTarget = $this->processTargeting($monster, $encounter, 'monster')['selectable'];
          $actionTarget = $monster['targets']['selectable'];
-
+         
          $monsterId = array_filter($moveTarget['allies'], fn($monster) => in_array($monster, $actionTarget['allies']));
          $heroId = array_filter($moveTarget['enemies'], fn($hero) => in_array($hero, $actionTarget['enemies'])); 
 
@@ -1273,22 +1486,28 @@ class EncounterService
    private function processMoveSelection(array $usableMoves, string $moveSelection, string $movePreference)
    {
       if($moveSelection == 'random')
-      {return $usableMoves[random_int(0, count($usableMoves) - 1)];}
-
-      $movePreference = $movePreference ?? '';
-
-      $pMoves = array_filter($usableMoves, fn($move) => $move['type'] == $movePreference);
-      $sMoves = array_filter($usableMoves, fn($move) => $move['category'] == $moveSelection || $move['category'] == 'balanced');
+      {return $usableMoves[random_int(0, count($usableMoves) - 1)]['move_id'];}
+      else if($moveSelection == 'reckless')
+      {$categories = ['offense'];}
+      else if($moveSelection == 'careful')
+      {$categories = ['defensive', 'support'];}
+      else if($moveSelection == 'supportive')
+      {$categories = ['support'];}
+      else
+      {throw new Exception('Invalid move selection: ' . $moveSelection);}
       
-      foreach ($usableMoves as &$move) 
+      $pMoves = array_filter($usableMoves, fn($move) => $move['type'] == $movePreference);
+      $sMoves = array_filter($usableMoves, fn($move) => in_array($move['category'], $categories) || $move['category'] == 'balanced');
+
+      foreach ($usableMoves as &$usableMove) 
       {
          $weight = 1;
-         if(in_array($move, $pMoves))
+         if(in_array($usableMove, $pMoves))
          {$weight += 1;}
-         if(in_array($move, $sMoves))
+         if(in_array($usableMove, $sMoves))
          {$weight += 1;}
 
-         $move['weight'] = $weight;
+         $usableMove['weight'] = $weight;
       }
 
       $totalWeight = array_sum(array_map(fn($move) => $move['weight'], $usableMoves));
@@ -1298,7 +1517,7 @@ class EncounterService
       {
          $randomWeight -= $move['weight'];
          if ($randomWeight <= 0) 
-         {return $move;}
+         {return $move['move_id'];}
       }
    }
 

@@ -146,16 +146,16 @@ D Implement undo action. (backspace)
 D Automatically assign Skip to defeated heroes.
 
 4.3 monster slect
-W Implement monster AI reader.
-W Implement random move selection.
-W Implement conditional move selection.
-  Implement HP and MP consumption when executing moves.
-  Implement monster targeting.
-  Implement monster action order from left to right.
-  Implement strategies move/target slect
+D Implement monster AI reader.
+D Implement random move selection.
+D Implement conditional move selection.
+D Implement HP and MP consumption when executing moves.
+D Implement monster targeting.
+D Implement monster action order from left to right.
+D Implement strategies move/target slect
   
-  Implement boss phase changes.
-  Implement boss AI behavior.
+D Implement boss phase changes.
+D Implement boss AI behavior.
   Implement boss reactions to player actions.
 
 4.4 processes/calculate the turn
