@@ -521,29 +521,6 @@ class EncounterService
       return $stats;
    } 
 
-   public function handleInput(array $offset) // offset has x and y and thies can be 0, 1, -1
-   {
-      [$encounter, $coordinates] = $this->getEncounterState($offset);
-      
-      [$encounter, $coordinates] = $this->processEncounterInput($encounter, $coordinates, $offset);
-
-      session(
-      [
-         'menu_x' => $coordinates["x"],
-         'menu_y' => $coordinates["y"],
-         'dialogue' => $this->dialogue,
-         'encounter' => 
-         [
-            'heroes' => $encounter['heroes'],
-            'monsters' => $encounter['monsters'],
-            'turn' => $encounter['turn'],
-            'phase' => $encounter['phase'],
-         ]
-      ]);
-
-      return $this->displayEncounter($encounter['monsters'], $encounter['heroes'], $this->dialogue, $coordinates);
-   }
-
    private function getEncounterState(array $offset)
    {
       $encounter = session()->get('encounter');
@@ -610,10 +587,6 @@ class EncounterService
             $coordinates = ["x" => 0, "y" => 0];
          }
 
-         if($encounter['phase'] == 'monster_turn')
-         {
-            $this->encounterPhaseChange($encounter);
-         }
       }
 
       return [$encounter, $coordinates];
@@ -919,9 +892,18 @@ class EncounterService
       throw new Exception('not a valid state');
    }
 
-   private function encounterPhaseChange(array $encounter)
+   public function handleInput(array $offset) // offset has x and y and these can be 0, 1, -1
    {
+      [$encounter, $coordinates] = $this->getEncounterState($offset);
+
       $phase = $encounter['phase'];
+
+      if($phase == 'hero_turn')
+      {
+         [$encounter, $coordinates] = $this->processEncounterInput($encounter, $coordinates, $offset);
+
+         $phase = $encounter['phase'];
+      }
       
       if($phase == 'monster_turn')
       {
@@ -935,20 +917,48 @@ class EncounterService
 
       if($phase == 'resolve_turn')
       {
-         $this->resolveEncounter($encounter);
-      }
-      
-      if($phase == 'hero_turn')
-      {
+         $encounter = $this->resolveEncounter($encounter);
+
+         $phase = $encounter['phase'];
          $encounter['turn']++;
       }
 
-      return $encounter;
+      if($phase == 'end_encounter')
+      {
+         return $this->endEncounter($encounter);
+      }
+
+      session(
+      [
+         'menu_x' => $coordinates["x"],
+         'menu_y' => $coordinates["y"],
+         'dialogue' => $this->dialogue,
+         'encounter' => 
+         [
+            'heroes' => $encounter['heroes'],
+            'monsters' => $encounter['monsters'],
+            'turn' => $encounter['turn'],
+            'phase' => $encounter['phase'],
+         ]
+      ]);
+
+      $data = $this->displayEncounter($encounter['monsters'], $encounter['heroes'], $this->dialogue, $coordinates);
+
+      return $data;
    }
-   
-   // Implement damage calculations.
-   // Implement Defense calculations.
-   // Implement affinity calculations.
+
+   private function endEncounter(array $encounter)
+   {
+      session(
+      [
+         'menu_x' => 0,
+         'menu_y' => 0,
+         'dialogue' => null,
+         'encounter' => null
+      ]);
+
+      return new MapService()->loadMap();
+   }
    
    // Implement move effect reader
    // Implement ability effect reader
@@ -964,6 +974,30 @@ class EncounterService
       // If escape fails, continue resolving the turn.
       // The remaining hero actions are discarded after a failed escape.
 
+      if(in_array(true, array_map(fn($hero) => $hero['selected_action'] == 'Run', $encounter['heroes'])))
+      {
+         $isBossEncounter = in_array(true, array_map(fn($monster) => $monster['boss'] == true, $encounter['monsters']));
+
+         if(!$isBossEncounter)
+         {
+            $heroLevels = array_map(fn($hero) => $hero['level'], $encounter['heroes']);
+            $averageHeroLevel = array_sum($heroLevels) / count($heroLevels);
+
+            $monsterLevels = array_map(fn($monster) => $monster['level'], $encounter['monsters']);
+            $averageMonsterLevel = array_sum($monsterLevels) / count($monsterLevels);
+
+            $roll = random_int(1, 10);
+
+            $escape = ($averageHeroLevel - $averageMonsterLevel) + 7 >= $roll;
+
+            if($escape)
+            {
+               $encounter['phase'] = 'end_encounter';
+               return $encounter;
+            }
+         }
+      }
+
       // 2. Synergy detection and validation
       // Collect the selected moves from all heroes and monsters.
       // Check whether all participants can afford the HP and MP costs of their original moves.
@@ -973,6 +1007,23 @@ class EncounterService
       // If all requirements are satisfied, register the synergy.
       // Store the synergy move ID, calculation rules, original move IDs,
       // original targets and participant entity IDs.
+
+      $monsterMoves = array_map(fn($monster) => $monster['selected_move'], $encounter['monsters']);
+      $heroMoves = array_map(fn($hero) => $hero['selected_move'], $encounter['heroes']);
+
+      $test = [];
+
+      foreach([['type' => 'heroes', 'moves' => $heroMoves], ['type' => 'monsters', 'moves' => $monsterMoves]] as $participants)
+      {
+         $synergyMoves = DB::table('synergy_moves')->select(DB::raw("synergy_moves.id as synergy_move_id, synergy_moves.synergy_id as synergy_id , synergy_moves.move_id as move_id, synergy_moves.participant as participant"))
+         ->whereIn('synergy_moves.move_id', $participants['moves'])->orderBy('synergy_id')->get();
+         $uniqueMoves = $synergyMoves->map(fn($synergyMove) => $synergyMove->synergy_move_id)->unique()->toArray();
+         $synergyMoves = $synergyMoves->map(fn($synergyMove) => $synergyMoves->filter(fn($move) => contains($uniqueMoves, $move))->toArray())->toArray();
+
+         $test[] = ['type' => $participants['type'], 'synergyMoves' => $synergyMoves];
+      }
+
+
 
       // 3. Synergy execution
       // Process registered synergies in the following order: Hero-Monster synergies -> Hero synergies -> Monster synergies.
@@ -999,6 +1050,8 @@ class EncounterService
       // Prepare the encounter for the next turn.
       // remove selected_action, selected_move, move_preference and clear targets
       // of alle the monster and heroes
+
+      return $encounter;
 
    }
 
