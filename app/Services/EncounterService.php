@@ -48,7 +48,7 @@ class EncounterService
       leftJoin('level_schemas', 'entities.level_schema_id', '=', 'level_schemas.id')->
       leftJoin('affinities', 'entities.affinity_id', '=', 'affinities.id')->
       leftJoin('abilities', 'entities.ability_id', '=', 'abilities.id')->
-      where('encounter_monsters.encounter_id', '=', $encounter->id)->get(); // $encounter->id
+      where('encounter_monsters.encounter_id', '=', 5)->get(); // $encounter->id
       
       foreach($monsters as $monster)
       {
@@ -515,7 +515,7 @@ class EncounterService
          $stats['total_stats'][$stat] = $total;
       }
 
-      $stats['current_stats']['hp'] = $stats['total_stats']['hp'];
+      $stats['current_stats']['hp'] = 11;// $stats['total_stats']['hp'];
       $stats['current_stats']['mp'] = $stats['total_stats']['mp'];
 
       return $stats;
@@ -1008,22 +1008,187 @@ class EncounterService
       // Store the synergy move ID, calculation rules, original move IDs,
       // original targets and participant entity IDs.
 
-      $monsterMoves = array_map(fn($monster) => $monster['selected_move'], $encounter['monsters']);
-      $heroMoves = array_map(fn($hero) => $hero['selected_move'], $encounter['heroes']);
+      $entities = [];
 
-      $test = [];
-
-      foreach([['type' => 'heroes', 'moves' => $heroMoves], ['type' => 'monsters', 'moves' => $monsterMoves]] as $participants)
+      foreach (['heroes', 'monsters'] as $entityType) 
       {
-         $synergyMoves = DB::table('synergy_moves')->select(DB::raw("synergy_moves.id as synergy_move_id, synergy_moves.synergy_id as synergy_id , synergy_moves.move_id as move_id, synergy_moves.participant as participant"))
-         ->whereIn('synergy_moves.move_id', $participants['moves'])->orderBy('synergy_id')->get();
-         $uniqueMoves = $synergyMoves->map(fn($synergyMove) => $synergyMove->synergy_move_id)->unique()->toArray();
-         $synergyMoves = $synergyMoves->map(fn($synergyMove) => $synergyMoves->filter(fn($move) => contains($uniqueMoves, $move))->toArray())->toArray();
+         foreach ($encounter[$entityType] as $index => $entity) 
+         {
+            if (empty($entity['selected_move'])) 
+            {continue;}
 
-         $test[] = ['type' => $participants['type'], 'synergyMoves' => $synergyMoves];
+            $entities[] = 
+            [
+               'key' => $entityType . ':' . $entity['instance_id'],
+               'index' => $index,
+               'instance_id' => $entity['instance_id'],
+               'entity_type' => $entityType,
+               'selected_move' => $entity['selected_move'],
+               'participant' => null,
+               'synergy_complete' => false
+            ];
+         }
       }
 
+      $selectedMoveIds = array_unique(array_column($entities, 'selected_move'));
 
+      $synergyPotential = DB::table('synergy_moves')->select("synergy_id")->
+      whereIn('synergy_moves.move_id', $selectedMoveIds)->distinct()->pluck('synergy_id')->toArray();
+      $registeredSynergies = [];      
+
+      if(!empty($synergyPotential))
+      {
+         $requirements = DB::table('synergy_moves')->select('id', 'synergy_id', 'move_id', 'participant')->
+         whereIn('synergy_id', $synergyPotential)->
+         orderBy('id')->get()->groupBy('synergy_id')->toArray();
+
+         $synergyMoves = DB::table('synergies')->select(DB::raw("synergies.id as synergy_id, synergies.move_id as move_id, synergies.rules,
+         moves.name as move_name, moves.type, moves.power, moves.effect, moves.cost, moves.category, moves.target, affinities.id as affinity_id, affinities.name as affinity_name"))->
+         leftJoin('moves', 'synergies.move_id', '=', 'moves.id')->
+         leftJoin('affinities', 'moves.affinity_id', '=', 'affinities.id')->
+         whereIn('synergies.id', $synergyPotential)->get()->toArray();
+
+         foreach ($requirements as $synergyId => $synergyRequirements) 
+         {
+            $allMovesFound = true;
+            $matchingEntities = [];
+
+            foreach ($synergyRequirements as $requirement) 
+            {
+               $moveFound = false;
+   
+               foreach ($entities as $entity) 
+               {
+                  if ($entity['selected_move'] == $requirement->move_id) 
+                  {
+                     $moveFound = true;
+                     $matchingEntities[] = ['entity' => $entity, 'requirement' => $requirement];
+                  }
+               }
+   
+               if (!$moveFound) 
+               {
+                  $allMovesFound = false;
+                  break;
+               }
+            }
+
+            if (!$allMovesFound) 
+            {continue;}
+
+            if (count($synergyRequirements) === 1)
+            {}// #todo add self synergy check/abilities
+
+            $selfEntities = array_filter($matchingEntities, fn($entity) => $entity['requirement']->participant === 'self');
+            $otherEntities = array_filter($matchingEntities, fn($entity) => $entity['requirement']->participant !== 'self');
+
+            foreach ($selfEntities as $selfEntity)
+            {
+               $originalSelfEntity = collect($entities)->firstWhere('key', $selfEntity['entity']['key']);
+
+               if ($originalSelfEntity['synergy_complete'])
+               {continue;}
+
+               $totalMoves = count($synergyRequirements);
+               $foundMoves = 1;
+               $matchedEntities = [$originalSelfEntity];
+               $usedEntities = [$originalSelfEntity['key']];
+
+               // check if the candidates are an enemy to self
+               foreach ($otherEntities as &$entity)
+               {
+                  if($originalSelfEntity['entity_type'] != $entity['entity']['entity_type'])
+                  { 
+                     $entity['entity']['participant'] = 'enemy';
+                  }
+                  else
+                  {
+                     $entity['entity']['participant'] = 'ally';
+                  }
+               }
+
+               unset($entity);
+
+               foreach ($synergyRequirements as $requirement)
+               {
+                  if ($requirement->participant === 'self')
+                  {continue;}
+
+                  $candidates = array_filter($otherEntities, fn($entity) => 
+                     $entity['entity']['selected_move'] == $requirement->move_id && 
+                     ($entity['entity']['participant'] == $requirement->participant || 'ally_or_enemy' ==  $requirement->participant) && 
+                     !$entity['entity']['synergy_complete'] &&
+                     !in_array($entity['entity']['key'], $usedEntities));
+                  
+                  if(!empty($candidates))
+                  {
+                     $matchedEntity = collect($candidates)->sortBy("entity.instance_id")->first();
+                     $usedEntities[] = $matchedEntity['entity']['key'];
+                     $matchedEntities[] = $matchedEntity['entity'];
+                     $foundMoves++;
+                  }
+               }
+
+               if($foundMoves == $totalMoves)
+               {
+                  foreach ($matchedEntities as $entity)
+                  {
+                     $endKey = $entity['index'];
+                     $entities[$endKey]['synergy_complete'] = true;
+                  }
+
+                  // reset/update $otherEntities
+                  $updatedEntities = [];
+                  foreach($matchingEntities as $entity) 
+                  {
+                     $index = array_search($entity['entity']['key'], array_column($entities, 'key'));
+                     $originalEntity = $entities[$index];
+
+                     $updatedEntities[] = ['entity' => $originalEntity, 'requirement' => $entity['requirement']];
+                  }
+
+                  $otherEntities = array_filter($updatedEntities, fn($entity) => $entity['requirement']->participant !== 'self');
+                  
+                  $slectedEntities = array_filter($entities, fn($entity) => in_array($entity['key'], $usedEntities));
+                  $sortedEntities = ['heroes' => [], 'monsters' => []];
+
+                  foreach ($slectedEntities as $entity)
+                  {
+                     $type = $entity['entity_type'];
+                     $sortedEntities[$type][] = $encounter[$type][$entity['index']];
+                  }
+
+                  if (!empty($sortedEntities['heroes']) && !empty($sortedEntities['monsters']))
+                  {$synergyType = 'hero_monster';}
+                  elseif (!empty($sortedEntities['heroes']))
+                  {$synergyType = 'hero';}
+                  else
+                  {$synergyType = 'monster';}
+
+                  $registeredSynergies[] =
+                  [
+                     'participant' => $sortedEntities,
+                     'synergy' => collect($synergyMoves)->firstWhere('synergy_id', $synergyId),
+                     'synergy_type' => $synergyType
+                  ];
+               }
+
+            }
+
+         }
+
+         if(count($registeredSynergies) > 1)
+         {
+            $order = ['hero_monster', 'hero', 'monster'];
+            usort($registeredSynergies, function ($a, $b) use ($order)
+            {
+               $pos_a = array_search($a['synergy_type'], $order);
+               $pos_b = array_search($b['synergy_type'], $order);
+               return $pos_a <=> $pos_b;
+            });
+         }
+
+      }
 
       // 3. Synergy execution
       // Process registered synergies in the following order: Hero-Monster synergies -> Hero synergies -> Monster synergies.
@@ -1033,6 +1198,15 @@ class EncounterService
       // If the synergy is cancelled, restore the original moves
       // If the synergy executes successfully, deduct the required costs, 
       // consume the original moves and execute the synergy move.
+
+      if(count($registeredSynergies) > 0)
+      {
+         foreach ($registeredSynergies as $synergy)
+         {
+            $processedRule = $this->ruleReader($synergy, $encounter);
+            
+         }
+      }
 
       // 4. Entity move execution
       // Process heroes first, followed by monsters.
@@ -1149,23 +1323,60 @@ class EncounterService
    private function ruleReader(array $synergyData, array $encounter)
    {
       // 1. Retrieve and decode the synergy rules.
-      // Retrieve the rules from $synergyData.
-      // Decode the JSON rules into a PHP array.
-      //
       // The rules contain:
       // - calculation: Determines how the synergy's stats are calculated.
       // - actions: Contains additional rules that must be processed.
+
+      $rules = json_decode($synergyData['synergy']['rules']);
 
       // 2. Process calculation rules.
       // Retrieve the participating entities and their current stats.
       // Determine which stat should be used.
       // Determine the calculation method.
+
+      $calculation = $rules['calculation'];
+      $calculationMethod = $calculation['method'];
+      $usedStats = collect($synergyData['participant']['total_stats'])->pluck($calculation['stat'])->toArray();
+
+      //'participant', 'synergy', 'synergy_type' 
       
       // Possible calculation methods:
       // - average: Calculate the average stat of all participants.
       // - highest: Use the highest stat among participants.
       // - lowest: Use the lowest stat among participants.
       // - added: Add together the stats of all participants.
+      if($synergyData['participant'] != 1)
+      {
+         switch($calculationMethod)
+         {
+            case 'average':
+            {
+               $totalState = round(array_sum($usedStats) / count($usedStats));
+               break;
+            }
+            case 'highest':
+            {
+               $totalState = max($usedStats);
+               break;
+            }
+            case 'lowest':
+            {
+               $totalState = min($usedStats);
+               break;
+            }
+            case 'added':
+            {
+               $totalState = array_sum($usedStats);
+               break;
+            }
+         }
+      }
+      else
+      {
+         $totalState = array_first($usedStats);
+      }
+
+      
 
       // 3. Process action rules.
       // Retrieve all rules defined in $synergyData['rules']['actions'].

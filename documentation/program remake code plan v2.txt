@@ -1447,8 +1447,6 @@ The game checks:
 Whether all required moves have been selected.
 Whether the correct participants are using the required moves.
 Whether the synergy is being performed by heroes, monsters, or both.
-Whether all participants are alive.
-Whether all participants can afford the HP and MP costs of their original moves.
 
 If all requirements are satisfied, the synergy is registered.
 If any requirement fails, the synergy does not activate.

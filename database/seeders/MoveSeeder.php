@@ -252,7 +252,7 @@ class MoveSeeder extends Seeder
             'power' => 5,
             'effect' => json_encode(['type' => 'stat_modifier', 'stat' => 'defense', 'operator' => '*', 'value' => 0.75, 'target' => 'enemy', 'duration' => ['value' => 2, 'unit' => 'turns']]),
             'description' => 'Deals powerful physical Fire damage and temporarily reduces the target\'s effective Defense.',
-            'cost' => 15,
+            'cost' => 5,
             'category' => 'offense',
             'target' => 'enemy'
          ],

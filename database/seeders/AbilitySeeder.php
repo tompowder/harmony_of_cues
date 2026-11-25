@@ -55,7 +55,7 @@ class AbilitySeeder extends Seeder
             'id' => 7,
             'name' => 'Burning Resolve',
             'description' => 'The user becomes stronger when badly injured.',
-            'effect' => json_encode(['trigger' => 'hp_changed', 'conditions' => [['type' => 'stat_threshold', 'stat' => 'hp_percent', 'operator' => '<=', 'value' => 40]], 'effects' => [['type' =>'stat_change', 'operator' => '*', 'stat' => 'attack', 'value' => 1.3, 'target' => 'self'], ['type' => 'enable_synergy', 'value' => true]], 'duration' => 'battle'])
+            'effect' => json_encode(['trigger' => 'hp_changed', 'conditions' => [['type' => 'stat_threshold', 'stat' => 'hp_percent', 'operator' => '<=', 'value' => 40]], 'effects' => [['type' =>'stat_change', 'operator' => '*', 'stat' => 'attack', 'value' => 1.3, 'target' => 'self'], ['type' => 'enable_synergy', 'enable' => true, 'value' => 1]], 'duration' => 'battle'])
          ],
          [
             'id' => 8,

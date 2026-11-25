@@ -22,7 +22,7 @@ class SynergySeeder extends Seeder
          ],
          [
             'id' => 2,
-            'move_id' => 20, // Holy Water
+            'move_id' => 21, // Holy Water
             'rules' => '{"calculation": {"stat": "magic", "method": "highest"}}'
          ],
          [
@@ -55,13 +55,13 @@ class SynergySeeder extends Seeder
             'id' => 3,
             'move_id' => 1, // Water blast
             'synergy_id' => 2, // Holy Water
-            'participant' => 'ally'
+            'participant' => 'self'
          ],
          [
             'id' => 4,
             'move_id' => 2, // Nature's wrath
             'synergy_id' => 3, // Burning Catastrophe
-            'participant' => 'ally'
+            'participant' => 'self'
          ],
          [
             'id' => 5,
@@ -73,7 +73,7 @@ class SynergySeeder extends Seeder
             'id' => 6,
             'move_id' => 3, // Arcane-Bolt
             'synergy_id' => 4, // Prismatic Beam
-            'participant' => 'ally'
+            'participant' => 'self'
          ],
          [
             'id' => 7,
